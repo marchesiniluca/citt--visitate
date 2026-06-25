@@ -60,6 +60,22 @@
         .regione-header { background-color: #e0eeee !important; font-weight: bold; text-align: left; color: #2f4f4f; padding-left: 15px; font-size: 15px; height: 38px; }
         
         input[type="checkbox"] { transform: scale(1.4); cursor: pointer; }
+
+        /* PULSANTI DI MODIFICA/ELIMINAZIONE */
+        .actions-container {
+            display: block;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+        .btn-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0 4px;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        .btn-action:hover { opacity: 1; }
         
         /* BARRA AGGIUNGICI CITTÀ FISSA IN BASSO */
         .add-city-bar {
@@ -137,10 +153,10 @@
     </div>
 
     <script>
-        const API_URL = " https://urlsand.esvalabs.com/?u=https%3A%2F%2Fapi.npoint.io%2Fcb8da9e69cba4ba8e1b9&e=f7e8077b&h=893e31b8&f=y&p=y&m=4gmCsN2mS2z25Y6 "; 
+        const API_URL = " https://urlsand.esvalabs.com/?u=https%3A%2F%2Fapi.npoint.io%2Fcb8da9e69cba4ba8e1b9&e=f7e8077b&h=893e31b8&f=y&p=y&m=4gmDKz0Pljz25jD "; 
         let statoGlobale = {};
 
-        // Database esteso: 25 città iconiche per ciascuna delle 20 regioni d'Italia (500 città totali)
+        // Database completo delle 20 regioni d'Italia (25 città ciascuna)
         const datiViaggi = {
             "Abruzzo": ["L'Aquila", "Pescara", "Chieti", "Teramo", "Montesilvano", "Avezzano", "Vasto", "Lanciano", "Sulmona", "Roseto degli Abruzzi", "Ortona", "Francavilla al Mare", "Giulianova", "San Salvo", "Spoltore", "Alba Adriatica", "Atri", "Martinsicuro", "Silvi", "Pineto", "Pescasseroli", "Roccaraso", "Scanno", "Santo Stefano di Sessanio", "Castelli"],
             "Basilicata": ["Potenza", "Matera", "Melfi", "Pisticci", "Lavello", "Rionero in Vulture", "Lauria", "Bernalda", "Venosa", "Avigliano", "Montescaglioso", "Ferrandina", "Maratea", "Scanzano Jonico", "Policoro", "Tursi", "Lagonegro", "Senise", "Rotonda", "Viggiano", "Genzano di Lucania", "Acerenza", "Castelmezzano", "Pietrapertosa", "Aliano"],
@@ -166,18 +182,15 @@
 
         const tbody = document.getElementById('table-body');
 
-        // Generazione iniziale ordinata delle sezioni
+        // Generazione iniziale ordinata delle sezioni fisse
         for (const [regione, cittaList] of Object.entries(datiViaggi)) {
             let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
             tbody.insertAdjacentHTML('beforeend', `<tr id="regione_${rId}"><td colspan="5" class="regione-header">${regione}</td></tr>`);
-            
-            // Ordina alfabeticamente le 25 città fisse prima di stamparle
-            cittaList.sort((a, b) => a.localeCompare(b)).forEach(citta => buildRowHTML(citta, `regione_${rId}`));
+            cittaList.sort((a, b) => a.localeCompare(b)).forEach(citta => buildRowHTML(citta, `regione_${rId}`, false));
         }
 
         function trovaRegioneDellaCitta(nomeCitta) {
             let nomeCittaNormalizzato = nomeCitta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-            
             for (const [regione, cittaList] of Object.entries(datiViaggi)) {
                 let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
                 let trovato = cittaList.some(c => c.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === nomeCittaNormalizzato);
@@ -186,13 +199,25 @@
             return "regione_altre_localita";
         }
 
-        function buildRowHTML(citta, idElementoTarget) {
-            let safeId = citta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
+        function generaSafeId(citta) {
+            return citta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
+        }
+
+        // Genera la riga HTML
+        function buildRowHTML(citta, idElementoTarget, isExtra = false) {
+            let safeId = generaSafeId(citta);
             if (document.getElementById(`row_${safeId}`)) return;
 
+            let tastiAzione = isExtra ? `
+                <div class="actions-container">
+                    <button class="btn-action" onclick="modificaCitta('${citta}')" title="Modifica">✏️</button>
+                    <button class="btn-action" onclick="eliminaCitta('${citta}')" title="Elimina">🗑️</button>
+                </div>
+            ` : '';
+
             let row = `
-                <tr id="row_${safeId}">
-                    <td class="col-citta">${citta}</td>
+                <tr id="row_${safeId}" class="${isExtra ? 'riga-extra' : ''}">
+                    <td class="col-citta" id="text_${safeId}">${citta} ${tastiAzione}</td>
                     <td class="col-check"><input type="checkbox" id="${safeId}_p1" onclick="salvaCambio('${safeId}', 'p1', this.checked)"></td>
                     <td class="col-check"><input type="checkbox" id="${safeId}_p2" onclick="salvaCambio('${safeId}', 'p2', this.checked)"></td>
                     <td class="col-check"><input type="checkbox" id="${safeId}_p3" onclick="salvaCambio('${safeId}', 'p3', this.checked)"></td>
@@ -210,13 +235,17 @@
                 statoGlobale = await risposta.json();
                 if (!statoGlobale || typeof statoGlobale !== 'object') statoGlobale = {};
                 
+                // Rimuove visivamente le righe extra non più presenti sul cloud
+                document.querySelectorAll('.riga-extra').forEach(el => el.remove());
+                document.getElementById("regione_altre_localita").style.display = "none";
+
                 if (statoGlobale["_listaCittaExtra"]) {
                     statoGlobale["_listaCittaExtra"].forEach(cittaNome => {
                         let targetRegioneId = trovaRegioneDellaCitta(cittaNome);
                         if (targetRegioneId === "regione_altre_localita") {
                             document.getElementById("regione_altre_localita").style.display = "table-row";
                         }
-                        buildRowHTML(cittaNome, targetRegioneId);
+                        buildRowHTML(cittaNome, targetRegioneId, true);
                     });
                 }
 
@@ -262,9 +291,57 @@
             if (targetRegioneId === "regione_altre_localita") {
                 document.getElementById("regione_altre_localita").style.display = "table-row";
             }
-            buildRowHTML(nomeCitta, targetRegioneId);
+            buildRowHTML(nomeCitta, targetRegioneId, true);
 
             inputField.value = "";
+            inviaStatoAlCloud();
+        }
+
+        // FUNZIONE PER ELIMINARE UNA CITTÀ EXTRA
+        function eliminaCitta(nomeCitta) {
+            if (!confirm(`Vuoi davvero eliminare "${nomeCitta}" dalla lista?`)) return;
+
+            if (statoGlobale["_listaCittaExtra"]) {
+                statoGlobale["_listaCittaExtra"] = statoGlobale["_listaCittaExtra"].filter(c => c !== nomeCitta);
+            }
+
+            let safeId = generaSafeId(nomeCitta);
+            // Pulisce anche i vecchi voti associati a questa città
+            delete statoGlobale[`${safeId}_p1`];
+            delete statoGlobale[`${safeId}_p2`];
+            delete statoGlobale[`${safeId}_p3`];
+            delete statoGlobale[`${safeId}_p4`];
+
+            let riga = document.getElementById(`row_${safeId}`);
+            if (riga) riga.remove();
+
+            inviaStatoAlCloud();
+        }
+
+        // FUNZIONE PER MODIFICARE IL NOME DI UNA CITTÀ EXTRA
+        function modificaCitta(vecchioNome) {
+            let nuovoNome = prompt(`Modifica il nome della città:`, vecchioNome);
+            if (nuovoNome === null || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
+            nuovoNome = nuovoNome.trim();
+
+            if (statoGlobale["_listaCittaExtra"]) {
+                let index = statoGlobale["_listaCittaExtra"].indexOf(vecchioNome);
+                if (index !== -1) {
+                    statoGlobale["_listaCittaExtra"][index] = nuovoNome;
+                }
+            }
+
+            let vecchioSafeId = generaSafeId(vecchioNome);
+            let nuovoSafeId = generaSafeId(nuovoNome);
+
+            // Trasferisce i vecchi voti sul nuovo ID della città
+            ['p1', 'p2', 'p3', 'p4'].forEach(p => {
+                if (statoGlobale[`${vecchioSafeId}_${p}`] !== undefined) {
+                    statoGlobale[`${nuovoSafeId}_${p}`] = statoGlobale[`${vecchioSafeId}_${p}`];
+                    delete statoGlobale[`${vecchioSafeId}_${p}`];
+                }
+            });
+
             inviaStatoAlCloud();
         }
 
@@ -282,6 +359,7 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(statoGlobale)
                 });
+                caricaDatiDalCloud(); // Forza ricaricamento pulito delle strutture
             } catch (e) {
                 console.error("Errore invio cloud:", e);
             }
