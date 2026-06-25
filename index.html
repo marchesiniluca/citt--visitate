@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabellone Viaggi Italia</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0 0 70px 0; color: #333; }
+        
+        .header-titolo { text-align: center; color: #2f4f4f; font-size: 22px; margin: 15px 0 5px 0; font-weight: bold; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 15px; font-size: 13px; }
+        
+        /* BLOCCO FISSO IN ALTO (Dashboard + Nomi Colonne) */
+        .top-sticky-container {
+            position: sticky;
+            top: 0;
+            background-color: #f4f7f6;
+            z-index: 1000;
+            padding: 10px 15px 0 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .dashboard { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 8px; 
+            text-align: center; 
+            margin-bottom: 10px;
+        }
+        .stat-box { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0eeee; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .stat-name { font-weight: bold; color: #2f4f4f; font-size: 13px; }
+        .stat-score { font-size: 18px; font-weight: bold; color: #008b8b; margin-top: 3px; }
+        
+        /* Testata fissa coordinata con la tabella */
+        .fake-header {
+            background-color: #2f4f4f;
+            color: white;
+            display: grid;
+            grid-template-columns: 2fr repeat(4, 1fr);
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            padding: 12px 0;
+        }
+        .fake-header div:first-child { text-align: left; padding-left: 15px; }
+
+        /* CONTENUTO SCORREVOLE */
+        .table-container { padding: 0 15px 20px 15px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        
+        td { padding: 12px 0; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) { background-color: #f9fbfb; }
+        
+        .col-citta { width: 40%; text-align: left; padding-left: 15px; font-weight: 500; }
+        .col-check { width: 15%; }
+        
+        .regione-header { background-color: #e0eeee !important; font-weight: bold; text-align: left; color: #2f4f4f; padding-left: 15px; font-size: 15px; height: 38px; }
+        
+        input[type="checkbox"] { transform: scale(1.4); cursor: pointer; }
+        
+        /* BARRA AGGIUNGICI CITTÀ FISSA IN BASSO */
+        .add-city-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
+            padding: 12px 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 1002;
+        }
+        .add-city-bar input[type="text"] {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+        }
+        .add-city-bar button {
+            background-color: #008b8b;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .add-city-bar button:active { background-color: #2f4f4f; }
+
+        @media (max-width: 600px) { 
+            .dashboard { grid-template-columns: repeat(2, 1fr); }
+            .fake-header { font-size: 12px; padding: 10px 0; }
+            td { font-size: 13px; padding: 10px 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-titolo">✈️ Città Visitate d'Italia</div>
+    <div class="subtitle">Aggiornamento automatico e condiviso</div>
+
+    <div class="top-sticky-container">
+        <div class="dashboard">
+            <div class="stat-box"><div class="stat-name">Luca</div><div class="stat-score" id="score-p1">0</div></div>
+            <div class="stat-box"><div class="stat-name">Elena</div><div class="stat-score" id="score-p2">0</div></div>
+            <div class="stat-box"><div class="stat-name">Alessia</div><div class="stat-score" id="score-p3">0</div></div>
+            <div class="stat-box"><div class="stat-name">Filippo</div><div class="stat-score" id="score-p4">0</div></div>
+        </div>
+
+        <div class="fake-header">
+            <div>Città</div>
+            <div>Luca</div>
+            <div>Elena</div>
+            <div>Alessia</div>
+            <div>Filippo</div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <tbody id="table-body">
+                <tr id="regione_altre_localita" style="display:none;"><td colspan="5" class="regione-header">📌 Altre Località</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="add-city-bar">
+        <input type="text" id="nuova-citta-input" placeholder="Scrivi una città (es. Sanremo, Otranto...)">
+        <button onclick="aggiungiNuovaCitta()">+</button>
+    </div>
+
+    <script>
+        const API_URL = " https://urlsand.esvalabs.com/?u=https%3A%2F%2Fapi.npoint.io%2Fcb8da9e69cba4ba8e1b9&e=f7e8077b&h=893e31b8&f=y&p=y&m=4gmCsN2mS2z25Y6 "; 
+        let statoGlobale = {};
+
+        // Database esteso: 25 città iconiche per ciascuna delle 20 regioni d'Italia (500 città totali)
+        const datiViaggi = {
+            "Abruzzo": ["L'Aquila", "Pescara", "Chieti", "Teramo", "Montesilvano", "Avezzano", "Vasto", "Lanciano", "Sulmona", "Roseto degli Abruzzi", "Ortona", "Francavilla al Mare", "Giulianova", "San Salvo", "Spoltore", "Alba Adriatica", "Atri", "Martinsicuro", "Silvi", "Pineto", "Pescasseroli", "Roccaraso", "Scanno", "Santo Stefano di Sessanio", "Castelli"],
+            "Basilicata": ["Potenza", "Matera", "Melfi", "Pisticci", "Lavello", "Rionero in Vulture", "Lauria", "Bernalda", "Venosa", "Avigliano", "Montescaglioso", "Ferrandina", "Maratea", "Scanzano Jonico", "Policoro", "Tursi", "Lagonegro", "Senise", "Rotonda", "Viggiano", "Genzano di Lucania", "Acerenza", "Castelmezzano", "Pietrapertosa", "Aliano"],
+            "Calabria": ["Catanzaro", "Reggio Calabria", "Cosenza", "Crotone", "Lamezia Terme", "Vibo Valentia", "Rossano", "Corigliano Calabro", "Rende", "Castrovillari", "Acri", "Palmi", "Soverato", "Tropea", "Gioia Tauro", "Scalea", "Amantea", "Paola", "Locri", "Siderno", "Scilla", "Pizzo", "Diamante", "Gerace", "Stilo"],
+            "Campania": ["Napoli", "Salerno", "Caserta", "Benevento", "Avellino", "Giugliano in Campania", "Torre del Greco", "Pozzuoli", "Aversa", "Battipaglia", "Cava de' Tirreni", "Scafati", "Casoria", "Castellammare di Stabia", "Acerra", "Ercolano", "Marano di Napoli", "Portici", "Afragola", "Sorrento", "Amalfi", "Positano", "Capri", "Ischia", "Pompei"],
+            "Emilia-Romagna": ["Bologna", "Parma", "Modena", "Reggio Emilia", "Ravenna", "Rimini", "Ferrara", "Forlì", "Piacenza", "Cesena", "Imola", "Faenza", "Carpi", "Sassuolo", "Riccione", "Cattolica", "Cesenatico", "Lugo", "Fidenza", "Cento", "Comacchio", "Bellaria-Igea Marina", "Maranello", "Bobbio", "Brisighella"],
+            "Friuli-Venezia Giulia": ["Trieste", "Udine", "Pordenone", "Gorizia", "Monfalcone", "Sacile", "Cordenons", "Codroipo", "Porcia", "Cervignano del Friuli", "Latisana", "Fontanafredda", "Spilimbergo", "Fiume Veneto", "Grado", "Lignano Sabbiadoro", "San Daniele del Friuli", "Palmanova", "Aquileia", "Tarvisio", "Cividale del Friuli", "Gemona del Friuli", "Tolmezzo", "Maniago", "Venzone"],
+            "Lazio": ["Roma", "Latina", "Viterbo", "Rieti", "Frosinone", "Guidonia Montecelio", "Fiumicino", "Aprilia", "Pomezia", "Anzio", "Tivoli", "Velletri", "Civitavecchia", "Nettuno", "Terracina", "Formia", "Fondia", "Marino", "Frascati", "Sabaudia", "Sperlonga", "Gaeta", "Tuscania", "Tarquinia", "Subiaco"],
+            "Liguria": ["Genova", "La Spezia", "Savona", "Sanremo", "Imperia", "Rapallo", "Chiavari", "Ventimiglia", "Albenga", "Sarzana", "Sestri Levante", "Taggia", "Varazze", "Lavagna", "Alassio", "Ceriale", "Loano", "Finale Ligure", "Portofino", "Camogli", "Lerici", "Vernazza", "Monterosso al Mare", "Riomaggiore", "Portovenere"],
+            "Lombardia": ["Milano", "Brescia", "Bergamo", "Monza", "Como", "Varese", "Pavia", "Cremona", "Mantova", "Lecco", "Lodi", "Sondrio", "Busto Arsizio", "Sesto San Giovanni", "Cinicello Balsamo", "Vigevano", "Legnano", "Gallarate", "Rho", "Saronno", "Sirmione", "Bellagio", "Vigevano", "Crema", "Livigno"],
+            "Marche": ["Ancona", "Pesaro", "Fano", "Ascoli Piceno", "Macerata", "Civitanova Marche", "Senigallia", "Jesi", "San Benedetto del Tronto", "Fabriano", "Porto Sant'Elpidio", "Recanati", "Tolentino", "Fermo", "Osimo", "Falconara Marittima", "Urbino", "Gradara", "Loreto", "Corinaldo", "Camerino", "San Leo", "Grottammare", "Offida", "Mondavio"],
+            "Molise": ["Campobasso", "Isernia", "Termoli", "Venafro", "Bojano", "Campomarino", "Larino", "Montenero di Bisaccia", "Agnone", "Riccia", "Guglionesi", "Trivento", "Frosolone", "Scapoli", "Sepino", "Fornelli", "Castel San Vincenzo", "Bagnoli del Trigno", "Pesco Pennataro", "Capracotta", "Roccamandolfi", "Ferrazzano", "Petrella Tifernina", "Gildone", "Guardialfiera"],
+            "Piemonte": ["Torino", "Novara", "Alessandria", "Asti", "Cuneo", "Moncalieri", "Collegno", "Rivoli", "Vercelli", "Biella", "Alba", "Bra", "Verbania", "Nichelino", "Settimo Torinese", "Venaria Reale", "Chieri", "Casale Monferrato", "Pinerolo", "Ivrea", "Domodossola", "Arona", "Stresa", "Susa", "Saluzzo"],
+            "Puglia": ["Bari", "Taranto", "Foggia", "Lecce", "Andria", "Barletta", "Brindisi", "Altamura", "Molfetta", "Manfredonia", "Cerignola", "Bitonto", "San Severo", "Bisceglie", "Trani", "Gallipoli", "Otranto", "Alberobello", "Polignano a Mare", "Monopoli", "Ostuni", "Vieste", "San Giovanni Rotondo", "Peschici", "Santa Maria di Leuca"],
+            "Sardegna": ["Cagliari", "Sassari", "Quartu Sant'Elena", "Olbia", "Alghero", "Nuoro", "Oristano", "Carbonia", "Selargius", "Iglesias", "Assemini", "Porto Torres", "Sestu", "Capoterra", "Monserrato", "Siniscola", "Tortolì", "Arzachena", "Bosa", "Castelsardo", "Carloforte", "Villasimius", "Pula", "Orgosolo", "Stintino"],
+            "Sicilia": ["Palermo", "Catania", "Messina", "Siracusa", "Marsala", "Gela", "Ragusa", "Trapani", "Caltanissetta", "Agrigento", "Bagheria", "Acireale", "Modica", "Mazara del Vallo", "Misterbianco", "Paternò", "Castelvetrano", "Augusta", "Taormina", "Cefalù", "Noto", "San Vito Lo Capo", "Erice", "Monreale", "Favignana"],
+            "Toscana": ["Firenze", "Prato", "Livorno", "Arezzo", "Pistoia", "Pisa", "Lucca", "Grosseto", "Massa", "Siena", "Carrara", "Viareggio", "Pistoia", "Scandicci", "Sesto Fiorentino", "Empoli", "Capannori", "Cascina", "Piombino", "San Gimignano", "Volterra", "Montepulciano", "Cortona", "Forte dei Marmi", "Portoferraio"],
+            "Trentino-Alto Adige": ["Trento", "Bolzano", "Rovereto", "Merano", "Bressanone", "Pergine Valsugana", "Laives", "Arco", "Riva del Garda", "Brunico", "Appiano sulla Strada del Vino", "Lana", "Caldaro sulla Strada del Vino", "Renon", "Vipiteno", "Ortisei", "Cavalese", "Canazei", "Pinzolo", "Madonna di Campiglio", "Predazzo", "Mezzolombardo", "Borgo Valsugana", "Cles", "Levico Terme"],
+            "Umbria": ["Perugia", "Terni", "Foligno", "Città di Castello", "Spoleto", "Gubbio", "Assisi", "Todi", "Orvieto", "Narni", "Bastia Umbra", "Marsciano", "Corciano", "Umbertide", "Castiglione del Lago", "Gualdo Tadino", "Amelia", "Spello", "Deruta", "Norcia", "Cascia", "Monteleone di Spoleto", "Panicale", "Bevagna", "Trevi"],
+            "Valle d'Aosta": ["Aosta", "Saint-Vincent", "Châtillon", "Sarre", "Pont-Saint-Martin", "Quart", "Saint-Christophe", "Gressan", "Courmayeur", "Donnas", "Brusson", "Gressoney-Saint-Jean", "Cogne", "Breuil-Cervinia", "Valtournenche", "Morgex", "La Salle", "Nus", "Fenis", "Verres", "Pre-Saint-Didier", "Arvier", "Bard", "Saint-Pierre", "Etroubles"],
+            "Veneto": ["Venezia", "Verona", "Padova", "Vicenza", "Treviso", "Rovigo", "Chioggia", "Bassano del Grappa", "San Donà di Piave", "Schio", "Mire", "Conegliano", "Castelfranco Veneto", "Villafranca di Verona", "Belluno", "Feltre", "Cortina d'Ampezzo", "Jesolo", "Caorle", "Peschiera del Garda", "Lazise", "Bardolino", "Asolo", "Marostica", "Arqua Petrarca"]
+        };
+
+        const tbody = document.getElementById('table-body');
+
+        // Generazione iniziale ordinata delle sezioni
+        for (const [regione, cittaList] of Object.entries(datiViaggi)) {
+            let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
+            tbody.insertAdjacentHTML('beforeend', `<tr id="regione_${rId}"><td colspan="5" class="regione-header">${regione}</td></tr>`);
+            
+            // Ordina alfabeticamente le 25 città fisse prima di stamparle
+            cittaList.sort((a, b) => a.localeCompare(b)).forEach(citta => buildRowHTML(citta, `regione_${rId}`));
+        }
+
+        function trovaRegioneDellaCitta(nomeCitta) {
+            let nomeCittaNormalizzato = nomeCitta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            
+            for (const [regione, cittaList] of Object.entries(datiViaggi)) {
+                let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
+                let trovato = cittaList.some(c => c.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === nomeCittaNormalizzato);
+                if (trovato) return `regione_${rId}`;
+            }
+            return "regione_altre_localita";
+        }
+
+        function buildRowHTML(citta, idElementoTarget) {
+            let safeId = citta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
+            if (document.getElementById(`row_${safeId}`)) return;
+
+            let row = `
+                <tr id="row_${safeId}">
+                    <td class="col-citta">${citta}</td>
+                    <td class="col-check"><input type="checkbox" id="${safeId}_p1" onclick="salvaCambio('${safeId}', 'p1', this.checked)"></td>
+                    <td class="col-check"><input type="checkbox" id="${safeId}_p2" onclick="salvaCambio('${safeId}', 'p2', this.checked)"></td>
+                    <td class="col-check"><input type="checkbox" id="${safeId}_p3" onclick="salvaCambio('${safeId}', 'p3', this.checked)"></td>
+                    <td class="col-check"><input type="checkbox" id="${safeId}_p4" onclick="salvaCambio('${safeId}', 'p4', this.checked)"></td>
+                </tr>
+            `;
+            
+            let targetRow = document.getElementById(idElementoTarget);
+            targetRow.insertAdjacentHTML('afterend', row);
+        }
+
+        async function caricaDatiDalCloud() {
+            try {
+                let risposta = await fetch(API_URL);
+                statoGlobale = await risposta.json();
+                if (!statoGlobale || typeof statoGlobale !== 'object') statoGlobale = {};
+                
+                if (statoGlobale["_listaCittaExtra"]) {
+                    statoGlobale["_listaCittaExtra"].forEach(cittaNome => {
+                        let targetRegioneId = trovaRegioneDellaCitta(cittaNome);
+                        if (targetRegioneId === "regione_altre_localita") {
+                            document.getElementById("regione_altre_localita").style.display = "table-row";
+                        }
+                        buildRowHTML(cittaNome, targetRegioneId);
+                    });
+                }
+
+                aggiornaSchermata();
+            } catch (e) {
+                console.error("Errore sincro cloud:", e);
+            }
+        }
+
+        function aggiornaSchermata() {
+            let punteggi = { p1: 0, p2: 0, p3: 0, p4: 0 };
+
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                let [cittaId, persona] = checkbox.id.split('_');
+                let chiave = `${cittaId}_${persona}`;
+                
+                if (statoGlobale[chiave] === true) {
+                    checkbox.checked = true;
+                    punteggi[persona]++;
+                } else {
+                    checkbox.checked = false;
+                }
+            });
+
+            document.getElementById('score-p1').innerText = punteggi.p1;
+            document.getElementById('score-p2').innerText = punteggi.p2;
+            document.getElementById('score-p3').innerText = punteggi.p3;
+            document.getElementById('score-p4').innerText = punteggi.p4;
+        }
+
+        function aggiungiNuovaCitta() {
+            let inputField = document.getElementById('nuova-citta-input');
+            let nomeCitta = inputField.value.trim();
+            if (nomeCitta === "") return;
+
+            if (!statoGlobale["_listaCittaExtra"]) statoGlobale["_listaCittaExtra"] = [];
+            
+            if (!statoGlobale["_listaCittaExtra"].includes(nomeCitta)) {
+                statoGlobale["_listaCittaExtra"].push(nomeCitta);
+            }
+
+            let targetRegioneId = trovaRegioneDellaCitta(nomeCitta);
+            if (targetRegioneId === "regione_altre_localita") {
+                document.getElementById("regione_altre_localita").style.display = "table-row";
+            }
+            buildRowHTML(nomeCitta, targetRegioneId);
+
+            inputField.value = "";
+            inviaStatoAlCloud();
+        }
+
+        function salvaCambio(cittaId, persona, checked) {
+            let chiave = `${cittaId}_${persona}`;
+            statoGlobale[chiave] = checked;
+            aggiornaSchermata();
+            inviaStatoAlCloud();
+        }
+
+        async function inviaStatoAlCloud() {
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(statoGlobale)
+                });
+            } catch (e) {
+                console.error("Errore invio cloud:", e);
+            }
+        }
+
+        caricaDatiDalCloud();
+        setInterval(caricaDatiDalCloud, 5000);
+    </script>
+</body>
+</html>
+
+
