@@ -5,113 +5,246 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tabellone Viaggi Italia</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0 0 70px 0; color: #333; }
+        :root {
+            --primary-color: #2f4f4f;
+            --secondary-color: #008b8b;
+            --accent-color: #e0eeee;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-light: #666666;
+            --border-color: #eef2f2;
+            
+            --p1-color: #3b82f6; /* Luca - Blu */
+            --p2-color: #ec4899; /* Elena - Rosa */
+            --p3-color: #10b981; /* Alessia - Verde */
+            --p4-color: #f59e0b; /* Filippo - Arancione */
+        }
+
+        body { 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            padding: 0 0 90px 0; 
+            color: var(--text-color);
+            line-height: 1.5;
+        }
         
-        .header-container { position: relative; text-align: center; margin: 15px 0 5px 0; }
-        .header-titolo { color: #2f4f4f; font-size: 22px; font-weight: bold; margin: 0; }
-        .subtitle { color: #666; font-size: 13px; margin: 3px 0 0 0; }
+        .header-container { 
+            text-align: center; 
+            padding: 25px 15px 15px 15px;
+            background: linear-gradient(135deg, var(--primary-color), #1a3333);
+            color: white;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .header-titolo { font-size: 26px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
+        .subtitle { color: #b2cece; font-size: 13px; margin: 6px 0 0 0; font-weight: 300; }
         
         #status-indicator {
             position: absolute;
-            top: 0;
+            top: 15px;
             right: 15px;
-            font-size: 12px;
-            font-weight: bold;
-            padding: 5px 10px;
-            border-radius: 15px;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(4px);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
         }
         
         .top-sticky-container {
             position: sticky;
             top: 0;
-            background-color: #f4f7f6;
+            background-color: rgba(244, 247, 246, 0.95);
+            backdrop-filter: blur(8px);
             z-index: 1000;
-            padding: 10px 15px 0 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+            border-bottom: 1px solid rgba(0,0,0,0.02);
         }
 
         .dashboard { 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
-            gap: 8px; 
-            text-align: center; 
-            margin-bottom: 10px;
+            gap: 12px; 
+            max-width: 1200px;
+            margin: 0 auto 15px auto;
         }
-        .stat-box { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0eeee; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .stat-name { font-weight: bold; color: #2f4f4f; font-size: 13px; }
-        .stat-score { font-size: 18px; font-weight: bold; color: #008b8b; margin-top: 3px; }
+        .stat-box { 
+            background: var(--card-bg); 
+            padding: 10px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); 
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 4px;
+        }
+        .stat-box.p1::before { background-color: var(--p1-color); }
+        .stat-box.p2::before { background-color: var(--p2-color); }
+        .stat-box.p3::before { background-color: var(--p3-color); }
+        .stat-box.p4::before { background-color: var(--p4-color); }
+
+        .stat-name { font-weight: 600; color: var(--primary-color); font-size: 14px; }
+        .stat-score { font-size: 22px; font-weight: 700; margin-top: 2px; }
+        .stat-box.p1 .stat-score { color: var(--p1-color); }
+        .stat-box.p2 .stat-score { color: var(--p2-color); }
+        .stat-box.p3 .stat-score { color: var(--p3-color); }
+        .stat-box.p4 .stat-score { color: var(--p4-color); }
+
+        .search-bar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+            background: white;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+            transition: border-color 0.2s;
+        }
+        .search-input:focus {
+            border-color: var(--secondary-color);
+        }
         
-        .fake-header {
-            background-color: #2f4f4f;
-            color: white;
+        .main-content {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        /* Card per singola regione */
+        .regione-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .regione-header { 
+            background-color: #f8faf9; 
+            font-weight: 700; 
+            color: var(--primary-color); 
+            padding: 14px 20px; 
+            font-size: 16px; 
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Griglia delle intestazioni colonne finta (allineata con le righe) */
+        .table-header-row {
             display: grid;
             grid-template-columns: 2fr repeat(4, 1fr);
+            padding: 10px 20px;
+            background: #f1f5f5;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-light);
             text-align: center;
-            font-size: 13px;
-            font-weight: bold;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
         }
-        .fake-header div:first-child { text-align: left; padding-left: 15px; }
+        .table-header-row div:first-child { text-align: left; }
 
-        .table-container { padding: 0 15px 20px 15px; }
-        table { width: 100%; border-collapse: collapse; background: white; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        /* Struttura a righe per le città */
+        .citta-row {
+            display: grid;
+            grid-template-columns: 2fr repeat(4, 1fr);
+            align-items: center;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.15s;
+        }
+        .citta-row:last-child { border-bottom: none; }
+        .citta-row:nth-child(even) { background-color: #fbfdfd; }
+        .citta-row:hover { background-color: #f4f8f8; }
         
-        td { padding: 12px 0; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
-        tr:last-child td { border-bottom: none; }
-        tr:nth-child(even) { background-color: #f9fbfb; }
+        .col-citta { text-align: left; font-weight: 500; font-size: 14px; display: flex; align-items: center; justify-content: space-between; }
+        .col-check { text-align: center; display: flex; justify-content: center; align-items: center; }
         
-        .col-citta { width: 40%; text-align: left; padding-left: 15px; font-weight: 500; }
-        .col-check { width: 15%; }
+        /* Checkbox personalizzati stilizzati */
+        input[type="checkbox"] { 
+            transform: scale(1.3); 
+            cursor: pointer; 
+            accent-color: var(--secondary-color);
+        }
         
-        .regione-header { background-color: #e0eeee !important; font-weight: bold; text-align: left; color: #2f4f4f; padding-left: 15px; font-size: 15px; height: 38px; }
-        
-        input[type="checkbox"] { transform: scale(1.4); cursor: pointer; }
+        /* Colori checkbox specifici per persona al passaggio del mouse o attivi */
+        .chk-p1 { accent-color: var(--p1-color) !important; }
+        .chk-p2 { accent-color: var(--p2-color) !important; }
+        .chk-p3 { accent-color: var(--p3-color) !important; }
+        .chk-p4 { accent-color: var(--p4-color) !important; }
 
-        .actions-container { display: inline-block; font-size: 11px; margin-left: 6px; }
-        .btn-action { background: none; border: none; cursor: pointer; padding: 0 2px; font-size: 12px; opacity: 0.7; }
-        .btn-action:hover { opacity: 1; }
+        .actions-container { display: flex; gap: 4px; opacity: 0.4; transition: opacity 0.2s; }
+        .citta-row:hover .actions-container { opacity: 1; }
+        .btn-action { background: none; border: none; cursor: pointer; padding: 2px; font-size: 12px; }
+        .btn-action:hover { transform: scale(1.15); }
         
         .add-city-bar {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            bottom: 0; left: 0; right: 0;
             background: white;
-            box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
-            padding: 12px 15px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+            padding: 15px 20px;
             display: flex;
-            gap: 10px;
+            gap: 12px;
             z-index: 1002;
+            max-width: 600px;
+            margin: 0 auto;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            border: 1px solid var(--border-color);
         }
         .add-city-bar input[type="text"] {
             flex: 1;
-            padding: 10px 15px;
-            border: 1px solid #ccc;
-            border-radius: 20px;
+            padding: 12px 18px;
+            border: 1px solid #ced4da;
+            border-radius: 24px;
             font-size: 14px;
             outline: none;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
         }
+        .add-city-bar input[type="text"]:focus { border-color: var(--secondary-color); }
+        
         .add-city-bar button {
-            background-color: #008b8b;
+            background: linear-gradient(135deg, var(--secondary-color), #006666);
             color: white;
             border: none;
-            padding: 0 20px;
-            border-radius: 20px;
-            font-size: 16px;
+            padding: 0 24px;
+            border-radius: 24px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,139,139,0.2);
+            transition: all 0.2s;
         }
-        .add-city-bar button:active { background-color: #2f4f4f; }
+        .add-city-bar button:active { transform: scale(0.95); }
 
-        @media (max-width: 600px) { 
-            .dashboard { grid-template-columns: repeat(2, 1fr); }
-            .fake-header { font-size: 12px; padding: 10px 0; }
-            td { font-size: 13px; padding: 10px 0; }
-            #status-indicator { position: static; display: inline-block; margin-top: 5px; }
+        @media (max-width: 768px) { 
+            .dashboard { gap: 8px; }
+            .stat-score { font-size: 18px; }
+            .stat-name { font-size: 12px; }
+            .table-header-row, .citta-row { padding: 10px 10px; font-size: 12px; grid-template-columns: 1.8fr repeat(4, 1fr); }
+            .col-citta { font-size: 13px; }
+            input[type="checkbox"] { transform: scale(1.15); }
+            .add-city-bar { border-radius: 0; max-width: 100%; }
         }
     </style>
 </head>
@@ -125,46 +258,36 @@
 
     <div class="top-sticky-container">
         <div class="dashboard">
-            <div class="stat-box"><div class="stat-name">Luca</div><div class="stat-score" id="score-p1">0</div></div>
-            <div class="stat-box"><div class="stat-name">Elena</div><div class="stat-score" id="score-p2">0</div></div>
-            <div class="stat-box"><div class="stat-name">Alessia</div><div class="stat-score" id="score-p3">0</div></div>
-            <div class="stat-box"><div class="stat-name">Filippo</div><div class="stat-score" id="score-p4">0</div></div>
+            <div class="stat-box p1"><div class="stat-name">Luca</div><div class="stat-score" id="score-p1">0</div></div>
+            <div class="stat-box p2"><div class="stat-name">Elena</div><div class="stat-score" id="score-p2">0</div></div>
+            <div class="stat-box p3"><div class="stat-name">Alessia</div><div class="stat-score" id="score-p3">0</div></div>
+            <div class="stat-box p4"><div class="stat-name">Filippo</div><div class="stat-score" id="score-p4">0</div></div>
         </div>
 
-        <div class="fake-header">
-            <div>Città</div>
-            <div>Luca</div>
-            <div>Elena</div>
-            <div>Alessia</div>
-            <div>Filippo</div>
+        <div class="search-bar-container">
+            <input type="text" id="search-input" class="search-input" placeholder="🔍 Cerca una città tra le regioni..." oninput="filtraCitta()">
         </div>
     </div>
 
-    <div class="table-container">
-        <table>
-            <tbody id="table-body">
-                <tr id="regione_altre_localita" style="display:none;"><td colspan="5" class="regione-header">📌 Altre Località</td></tr>
-            </tbody>
-        </table>
-    </div>
+    <div class="main-content" id="regions-container">
+        </div>
 
     <div class="add-city-bar">
-        <input type="text" id="nuova-citta-input" placeholder="Scrivi una città (es. Sanremo, Otranto...)">
+        <input type="text" id="nuova-citta-input" placeholder="Aggiungi una nuova città personalizzata...">
         <button onclick="aggiungiNuovaCitta()">+</button>
     </div>
 
     <script>
         // =======================================================
-        // CONFIGURAZIONE GITHUB - GIÀ COMPILATA CON I TUOI DATI
+        // CONFIGURAZIONE GITHUB
         // =======================================================
         const GH_CONFIG = {
-            owner: "marchesiniluca",   // Il tuo username di GitHub
-            repo: "citt--visitate",    // Il nome del tuo repository
-            path: "dati.json",         // Il file cloud con i salvataggi
-            branch: "main"             // Branch principale
+            owner: "marchesiniluca",   
+            repo: "citt--visitate",    
+            path: "dati.json",         
+            branch: "main"             
         };
 
-        // Recupera il token salvato nel browser per evitare di metterlo nel codice pubblico
         let GITHUB_TOKEN = localStorage.getItem('gh_travel_token');
         if (!GITHUB_TOKEN) {
             GITHUB_TOKEN = prompt("Inserisci il tuo GitHub Token (ghp_...):\n(Verrà salvato in sicurezza solo sul tuo browser)");
@@ -202,7 +325,7 @@
             "Veneto": ["Venezia", "Verona", "Padova", "Vicenza", "Treviso", "Rovigo", "Chioggia", "Bassano del Grappa", "San Donà di Piave", "Schio", "Mire", "Conegliano", "Castelfranco Veneto", "Villafranca di Verona", "Belluno", "Feltre", "Cortina d'Ampezzo", "Jesolo", "Caorle", "Peschiera del Garda", "Lazise", "Bardolino", "Asolo", "Marostica", "Arqua Petrarca"]
         };
 
-        const tbody = document.getElementById('table-body');
+        const container = document.getElementById('regions-container');
         const indicator = document.getElementById('status-indicator');
 
         if(localStorage.getItem('tabellone_viaggi')) {
@@ -210,74 +333,89 @@
         }
 
         function renderizzaTabellaCompleta() {
-            const righeExtraVecchie = document.querySelectorAll('.riga-extra');
-            righeExtraVecchie.forEach(el => el.remove());
+            container.innerHTML = "";
+
+            // Mappa temporanea per unire città fisse e città extra dell'utente sotto le rispettive regioni
+            let mappaRegioniCitta = {};
             
-            Array.from(tbody.children).forEach(nodo => {
-                if(nodo.id !== "regione_altre_localita") nodo.remove();
-            });
-
             for (const [regione, cittaList] of Object.entries(datiViaggi)) {
-                let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
-                tbody.insertAdjacentHTML('beforeend', `<tr id="regione_${rId}"><td colspan="5" class="regione-header">📌 ${regione}</td></tr>`);
-                
-                cittaList.sort((a, b) => a.localeCompare(b)).forEach(citta => {
-                    buildRowHTML(citta, `regione_${rId}`, false);
-                });
+                mappaRegioniCitta[regione] = [...cittaList];
             }
+            mappaRegioniCitta["📌 Altre Località"] = [];
 
-            document.getElementById("regione_altre_localita").style.display = "none";
+            // Assegna le città extra alla regione corretta o ad Altre Località
             if (statoGlobale["_listaCittaExtra"]) {
                 statoGlobale["_listaCittaExtra"].forEach(cittaNome => {
-                    let targetRegioneId = trovaRegioneDellaCitta(cittaNome);
-                    if (targetRegioneId === "regione_altre_localita") {
-                        document.getElementById("regione_altre_localita").style.display = "table-row";
-                    }
-                    buildRowHTML(cittaNome, targetRegioneId, true);
+                    let regioneTrovata = trovaNomeRegione(cittaNome);
+                    mappaRegioniCitta[regioneTrovata].push(cittaNome);
                 });
             }
+
+            // Genera l'HTML strutturato per blocchi di Regioni
+            for (const [regione, cittaList] of Object.entries(mappaRegioniCitta)) {
+                if (cittaList.length === 0) continue; // Salta Altre località se vuota
+
+                let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
+                let isExtraGroup = regione === "📌 Altre Località";
+
+                // Ordina alfabeticamente le città della regione
+                cittaList.sort((a, b) => a.localeCompare(b));
+
+                let cardHTML = `
+                    <div class="regione-card" id="card_${rId}">
+                        <div class="regione-header">${isExtraGroup ? '' : '📌'} ${regione}</div>
+                        <div class="table-header-row">
+                            <div>Città</div>
+                            <div>Luca</div>
+                            <div>Elena</div>
+                            <div>Alessia</div>
+                            <div>Filippo</div>
+                        </div>
+                        <div id="body_${rId}"></div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', cardHTML);
+
+                let bodyRegione = document.getElementById(`body_${rId}`);
+                
+                cittaList.forEach(citta => {
+                    let isExtraCitta = statoGlobale["_listaCittaExtra"] && statoGlobale["_listaCittaExtra"].includes(citta);
+                    let safeId = generaSafeId(citta);
+
+                    let tastiAzione = isExtraCitta ? `
+                        <div class="actions-container">
+                            <button class="btn-action" onclick="modificaCitta('${citta}')">✏️</button>
+                            <button class="btn-action" onclick="eliminaCitta('${citta}')">🗑️</button>
+                        </div>
+                    ` : '';
+
+                    let rowHTML = `
+                        <div class="citta-row" id="row_${safeId}" data-name="${citta.toLowerCase()}">
+                            <div class="col-citta" id="text_${safeId}">${citta} ${tastiAzione}</div>
+                            <div class="col-check"><input type="checkbox" class="chk-p1" id="${safeId}_p1" onclick="salvaCambio('${safeId}', 'p1', this.checked)"></div>
+                            <div class="col-check"><input type="checkbox" class="chk-p2" id="${safeId}_p2" onclick="salvaCambio('${safeId}', 'p2', this.checked)"></div>
+                            <div class="col-check"><input type="checkbox" class="chk-p3" id="${safeId}_p3" onclick="salvaCambio('${safeId}', 'p3', this.checked)"></div>
+                            <div class="col-check"><input type="checkbox" class="chk-p4" id="${safeId}_p4" onclick="salvaCambio('${safeId}', 'p4', this.checked)"></div>
+                        </div>
+                    `;
+                    bodyRegione.insertAdjacentHTML('beforeend', rowHTML);
+                });
+            }
+
             aggiornaSchermata();
         }
 
-        function trovaRegioneDellaCitta(nomeCitta) {
-            let nomeCittaNormalizzato = nomeCitta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        function trovaNomeRegione(nomeCitta) {
+            let nomeNormalizzato = nomeCitta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             for (const [regione, cittaList] of Object.entries(datiViaggi)) {
-                let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
-                let trovato = cittaList.some(c => c.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === nomeCittaNormalizzato);
-                if (trovato) return `regione_${rId}`;
+                let trovato = cittaList.some(c => c.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === nomeNormalizzato);
+                if (trovato) return region;
             }
-            return "regione_altre_localita";
+            return "📌 Altre Località";
         }
 
         function generaSafeId(citta) {
             return citta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
-        }
-
-        function buildRowHTML(citta, idElementoTarget, isExtra = false) {
-            let safeId = generaSafeId(citta);
-            if (document.getElementById(`row_${safeId}`)) return;
-
-            let tastiAzione = isExtra ? `
-                <div class="actions-container">
-                    <button class="btn-action" onclick="modificaCitta('${citta}')">✏️</button>
-                    <button class="btn-action" onclick="eliminaCitta('${citta}')">🗑️</button>
-                </div>
-            ` : '';
-
-            let row = `
-                <tr id="row_${safeId}" class="${isExtra ? 'riga-extra' : ''}">
-                    <td class="col-citta" id="text_${safeId}">${citta} ${tastiAzione}</td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p1" onclick="salvaCambio('${safeId}', 'p1', this.checked)"></td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p2" onclick="salvaCambio('${safeId}', 'p2', this.checked)"></td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p3" onclick="salvaCambio('${safeId}', 'p3', this.checked)"></td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p4" onclick="salvaCambio('${safeId}', 'p4', this.checked)"></td>
-                </tr>
-            `;
-            
-            let targetRow = document.getElementById(idElementoTarget);
-            if(targetRow) {
-                targetRow.insertAdjacentHTML('afterend', row);
-            }
         }
 
         async function caricaDatiDaGitHub() {
@@ -301,7 +439,7 @@
                             aggiornaSchermata();
                         }
                         indicator.innerHTML = "🟢 GitHub Sincronizzato";
-                        indicator.style.color = "green";
+                        indicator.style.background = "#10b981";
                     }
                 } else if (risposta.status === 404) {
                     inviaStatoAGitHub();
@@ -309,8 +447,8 @@
                     throw new Error("GitHub KO");
                 }
             } catch (e) {
-                indicator.innerHTML = "⚠️ Errore o Token mancante...";
-                indicator.style.color = "orange";
+                indicator.innerHTML = "⚠️ Errore Sincronizzazione";
+                indicator.style.background = "#f59e0b";
             }
         }
 
@@ -333,6 +471,31 @@
             document.getElementById('score-p2').innerText = punteggi.p2;
             document.getElementById('score-p3').innerText = punteggi.p3;
             document.getElementById('score-p4').innerText = punteggi.p4;
+        }
+
+        function filtraCitta() {
+            let query = document.getElementById('search-input').value.toLowerCase().trim();
+            
+            document.querySelectorAll('.regione-card').forEach(card => {
+                let rigaVisibileNellaCard = false;
+                
+                card.querySelectorAll('.citta-row').forEach(row => {
+                    let nomeCitta = row.getAttribute('data-name');
+                    if (nomeCitta.includes(query)) {
+                        row.style.display = 'grid';
+                        rigaVisibileNellaCard = true;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Se nessuna città della regione corrisponde alla ricerca, nasconde l'intera card
+                if (rigaVisibileNellaCard || query === "") {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
         }
 
         function aggiungiNuovaCitta() {
@@ -370,7 +533,7 @@
         function modificaCitta(vecchioNome) {
             let nuovoNome = prompt(`Modifica il nome della città:`, vecchioNome);
             if (nuovoNome === null || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
-            nuovoNome = nuevoNome.trim();
+            nuovoNome = nuovoNome.trim();
 
             if (statoGlobale["_listaCittaExtra"]) {
                 let index = statoGlobale["_listaCittaExtra"].indexOf(vecchioNome);
@@ -403,7 +566,7 @@
             localStorage.setItem('tabellone_viaggi', JSON.stringify(statoGlobale));
             isSaving = true;
             indicator.innerHTML = "🔄 Salvataggio...";
-            indicator.style.color = "blue";
+            indicator.style.background = "#3b82f6";
             
             try {
                 let contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(statoGlobale, null, 2))));
@@ -430,13 +593,13 @@
                     let jsonRes = await risposta.json();
                     currentSha = jsonRes.content.sha;
                     indicator.innerHTML = "🟢 GitHub Sincronizzato";
-                    indicator.style.color = "green";
+                    indicator.style.background = "#10b981";
                 } else {
                     throw new Error("Errore GitHub");
                 }
             } catch (e) {
                 indicator.innerHTML = "❌ Errore di connessione";
-                indicator.style.color = "red";
+                indicator.style.background = "#ef4444";
             } finally {
                 isSaving = false;
             }
