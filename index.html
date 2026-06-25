@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tabellone Viaggi Italia</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 15px; color: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0 0 70px 0; color: #333; }
         
-        .header-container { position: relative; text-align: center; margin: 5px 0 15px 0; }
+        .header-container { position: relative; text-align: center; margin: 15px 0 5px 0; }
         .header-titolo { color: #2f4f4f; font-size: 22px; font-weight: bold; margin: 0; }
         .subtitle { color: #666; font-size: 13px; margin: 3px 0 0 0; }
         
+        /* Indicatore visivo dello stato della connessione */
         #status-indicator {
             position: absolute;
             top: 0;
@@ -28,7 +29,7 @@
             top: 0;
             background-color: #f4f7f6;
             z-index: 1000;
-            padding-bottom: 5px;
+            padding: 10px 15px 0 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
@@ -57,7 +58,7 @@
         }
         .fake-header div:first-child { text-align: left; padding-left: 15px; }
 
-        .table-container { margin-top: 5px; }
+        .table-container { padding: 0 15px 20px 15px; }
         table { width: 100%; border-collapse: collapse; background: white; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         
         td { padding: 12px 0; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
@@ -71,15 +72,41 @@
         
         input[type="checkbox"] { transform: scale(1.4); cursor: pointer; }
 
-        .actions-container { display: inline-block; font-size: 11px; margin-left: 8px; }
-        .btn-action { background: none; border: none; cursor: pointer; padding: 0 2px; font-size: 12px; opacity: 0.6; }
+        .actions-container { display: inline-block; font-size: 11px; margin-left: 6px; }
+        .btn-action { background: none; border: none; cursor: pointer; padding: 0 2px; font-size: 12px; opacity: 0.7; }
         .btn-action:hover { opacity: 1; }
         
-        .inline-add-row td { background-color: #fdfdfd; padding: 8px 15px; text-align: left; border-bottom: 3px solid #cbdad4; }
-        .inline-add-container { display: flex; gap: 8px; max-width: 350px; }
-        .inline-add-container input { flex: 1; padding: 6px 12px; border: 1px solid #ccc; border-radius: 15px; font-size: 12px; outline: none; }
-        .inline-add-container button { background-color: #008b8b; color: white; border: none; padding: 0 15px; border-radius: 15px; font-size: 12px; font-weight: bold; cursor: pointer; }
-        .inline-add-container button:active { background-color: #2f4f4f; }
+        .add-city-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
+            padding: 12px 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 1002;
+        }
+        .add-city-bar input[type="text"] {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+        }
+        .add-city-bar button {
+            background-color: #008b8b;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .add-city-bar button:active { background-color: #2f4f4f; }
 
         @media (max-width: 600px) { 
             .dashboard { grid-template-columns: repeat(2, 1fr); }
@@ -93,7 +120,7 @@
 
     <div class="header-container">
         <div class="header-titolo">✈️ Città Visitate d'Italia</div>
-        <div class="subtitle">Sincronizzazione Cloud Condivisa</div>
+        <div class="subtitle">Aggiornamento automatico e condiviso</div>
         <div id="status-indicator">⏳ Connessione...</div>
     </div>
 
@@ -117,11 +144,18 @@
     <div class="table-container">
         <table>
             <tbody id="table-body">
-                </tbody>
+                <tr id="regione_altre_localita" style="display:none;"><td colspan="5" class="regione-header">📌 Altre Località</td></tr>
+            </tbody>
         </table>
     </div>
 
+    <div class="add-city-bar">
+        <input type="text" id="nuova-citta-input" placeholder="Scrivi una città (es. Sanremo, Otranto...)">
+        <button onclick="aggiungiNuovaCitta()">+</button>
+    </div>
+
     <script>
+        // URL pulito ed ottimizzato
         const API_URL = "https://api.npoint.io/cb8da9e69cba4ba8e1b9"; 
         let statoGlobale = {};
         let isSaving = false;
@@ -152,96 +186,111 @@
         const tbody = document.getElementById('table-body');
         const indicator = document.getElementById('status-indicator');
 
-        function normalizzaTesto(t) { return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); }
-        function generaSafeId(citta) { return normalizzaTesto(citta).replace(/[^a-z0-9]/g, "_"); }
-        function ottieniRegioneId(nomeRegione) { return nomeRegione.toLowerCase().replace(/[^a-z0-9]/g, "_"); }
-
+        // Caricamento preventivo locale d'emergenza
         if(localStorage.getItem('tabellone_viaggi')) {
             try { statoGlobale = JSON.parse(localStorage.getItem('tabellone_viaggi')); } catch(e){}
         }
 
         function renderizzaTabellaCompleta() {
-            tbody.innerHTML = "";
+            // Svuota e ricrea per evitare id duplicati o disallineamenti
+            const righeExtraVecchie = document.querySelectorAll('.riga-extra');
+            righeExtraVecchie.forEach(el => el.remove());
+            
+            // Pulisce tutto tranne la riga "Altre Località"
+            const nodi = Array.from(tbody.children);
+            nodi.forEach(nodo => {
+                if(nodo.id !== "regione_altre_localita") nodo.remove();
+            });
+
             for (const [regione, cittaList] of Object.entries(datiViaggi)) {
-                let rId = ottieniRegioneId(regione);
+                let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
                 tbody.insertAdjacentHTML('beforeend', `<tr id="regione_${rId}"><td colspan="5" class="regione-header">📌 ${regione}</td></tr>`);
                 
-                let extraDellaRegione = (statoGlobale["_mappaCittaExtra"] && statoGlobale["_mappaCittaExtra"][regione]) ? statoGlobale["_mappaCittaExtra"][regione] : [];
-                let tutteLeCitta = [...cittaList, ...extraDellaRegione];
-                tutteLeCitta.sort((a, b) => a.localeCompare(b));
-
-                tutteLeCitta.forEach(citta => {
-                    let isExtra = extraDellaRegione.includes(citta);
-                    let safeId = generaSafeId(citta);
-                    let tastiAzione = isExtra ? `<div class="actions-container"><button class="btn-action" onclick="modificaCitta('${regione}','${citta}')">✏️</button><button class="btn-action" onclick="eliminaCitta('${regione}','${citta}')">🗑️</button></div>` : '';
-
-                    let row = `
-                        <tr id="row_${safeId}" class="${isExtra ? 'riga-extra' : ''}">
-                            <td class="col-citta">${citta} ${tastiAzione}</td>
-                            <td class="col-check"><input type="checkbox" id="${safeId}_p1" onclick="salvaCambio('${safeId}', 'p1', this.checked)"></td>
-                            <td class="col-check"><input type="checkbox" id="${safeId}_p2" onclick="salvaCambio('${safeId}', 'p2', this.checked)"></td>
-                            <td class="col-check"><input type="checkbox" id="${safeId}_p3" onclick="salvaCambio('${safeId}', 'p3', this.checked)"></td>
-                            <td class="col-check"><input type="checkbox" id="${safeId}_p4" onclick="salvaCambio('${safeId}', 'p4', this.checked)"></td>
-                        </tr>
-                    `;
-                    tbody.insertAdjacentHTML('beforeend', row);
+                cittaList.sort((a, b) => a.localeCompare(b)).forEach(citta => {
+                    buildRowHTML(citta, `regione_${rId}`, false);
                 });
-
-                let inputRowHTML = `
-                    <tr id="input_row_${rId}" class="inline-add-row">
-                        <td colspan="5">
-                            <div class="inline-add-container">
-                                <input type="text" id="input_${rId}" placeholder="Aggiungi città in ${regione}...">
-                                <button onclick="aggiungiCittaInRegione('${regione}')">+</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', inputRowHTML);
             }
-            aggiornaSchermataSpunte();
+
+            document.getElementById("regione_altre_localita").style.display = "none";
+            if (statoGlobale["_listaCittaExtra"]) {
+                statoGlobale["_listaCittaExtra"].forEach(cittaNome => {
+                    let targetRegioneId = trovaRegioneDellaCitta(cittaNome);
+                    if (targetRegioneId === "regione_altre_localita") {
+                        document.getElementById("regione_altre_localita").style.display = "table-row";
+                    }
+                    buildRowHTML(cittaNome, targetRegioneId, true);
+                });
+            }
+            aggiornaSchermata();
         }
 
-        function aggiungiCittaInRegione(nomeRegione) {
-            let rId = ottieniRegioneId(nomeRegione);
-            let inputField = document.getElementById(`input_${rId}`);
-            let nomeCitta = inputField.value.trim();
-            if (nomeCitta === "") return;
-
-            if (!statoGlobale["_mappaCittaExtra"]) statoGlobale["_mappaCittaExtra"] = {};
-            if (!statoGlobale["_mappaCittaExtra"][nomeRegione]) statoGlobale["_mappaCittaExtra"][nomeRegione] = [];
-
-            if (!statoGlobale["_mappaCittaExtra"][nomeRegione].includes(nomeCitta)) {
-                statoGlobale["_mappaCittaExtra"][nomeRegione].push(nomeCitta);
+        function trovaRegioneDellaCitta(nomeCitta) {
+            let nomeCittaNormalizzato = nomeCitta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            for (const [regione, cittaList] of Object.entries(datiViaggi)) {
+                let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
+                let trovato = cittaList.some(c => c.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === nomeCittaNormalizzato);
+                if (trovato) return `regione_${rId}`;
             }
+            return "regione_altre_localita";
+        }
 
-            inputField.value = "";
-            renderizzaTabellaCompleta();
-            salvaEInvia();
+        // Funzione critica corretta: pulisce interamente stringhe complesse eliminando caratteri speciali
+        function generaSafeId(citta) {
+            return citta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
+        }
+
+        function buildRowHTML(citta, idElementoTarget, isExtra = false) {
+            let safeId = generaSafeId(citta);
+            if (document.getElementById(`row_${safeId}`)) return;
+
+            let tastiAzione = isExtra ? `
+                <div class="actions-container">
+                    <button class="btn-action" onclick="modificaCitta('${citta}')">✏️</button>
+                    <button class="btn-action" onclick="eliminaCitta('${citta}')">🗑️</button>
+                </div>
+            ` : '';
+
+            let row = `
+                <tr id="row_${safeId}" class="${isExtra ? 'riga-extra' : ''}">
+                    <td class="col-citta" id="text_${safeId}">${citta} ${tastiAzione}</td>
+                    <td class="col-check"><input type="checkbox" id="${safeId}_p1" onclick="salvaCambio('${safeId}', 'p1', this.checked)"></td>
+                    <td class="col-check"><input type="checkbox" id="${safeId}_p2" onclick="salvaCambio('${safeId}', 'p2', this.checked)"></td>
+                    <td class="col-check"><input type="checkbox" id="${safeId}_p3" onclick="salvaCambio('${safeId}', 'p3', this.checked)"></td>
+                    <td class="col-check"><input type="checkbox" id="${safeId}_p4" onclick="salvaCambio('${safeId}', 'p4', this.checked)"></td>
+                </tr>
+            `;
+            
+            let targetRow = document.getElementById(idElementoTarget);
+            if(targetRow) {
+                targetRow.insertAdjacentHTML('afterend', row);
+            }
         }
 
         async function caricaDatiDalCloud() {
-            if (isSaving) return; 
+            if (isSaving) return;
             try {
                 let risposta = await fetch(API_URL);
-                if (risposta.ok) {
-                    let nuoviDati = await risposta.json();
-                    if (nuoviDati && typeof nuoviDati === 'object') {
-                        statoGlobale = nuoviDati;
+                if(risposta.ok) {
+                    let datiCloud = await risposta.json();
+                    if (datiCloud && typeof datiCloud === 'object') {
+                        statoGlobale = datiCloud;
                         localStorage.setItem('tabellone_viaggi', JSON.stringify(statoGlobale));
                         renderizzaTabellaCompleta();
-                        indicator.innerHTML = "🟢 Sincronizzato sul Cloud";
+                        indicator.innerHTML = "🟢 Connesso";
                         indicator.style.color = "green";
                     }
+                } else {
+                    throw new Error("Errore risposta server");
                 }
             } catch (e) {
-                indicator.innerHTML = "⚠️ Solo Locale (Problema di rete)";
+                indicator.innerHTML = "⚠️ Solo Locale (Sincronizzazione...)";
                 indicator.style.color = "orange";
+                console.warn("Impossibile scaricare dal cloud, uso dati locali:", e);
                 renderizzaTabellaCompleta();
             }
         }
 
-        function aggiornaSchermataSpunte() {
+        function aggiornaSchermata() {
             let punteggi = { p1: 0, p2: 0, p3: 0, p4: 0 };
 
             document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
@@ -262,18 +311,26 @@
             document.getElementById('score-p4').innerText = punteggi.p4;
         }
 
-        function salvaCambio(cittaId, persona, checked) {
-            let chiave = `${cittaId}_${persona}`;
-            statoGlobale[chiave] = checked;
-            aggiornaSchermataSpunte();
-            salvaEInvia();
+        function aggiungiNuovaCitta() {
+            let inputField = document.getElementById('nuova-citta-input');
+            let nomeCitta = inputField.value.trim();
+            if (nomeCitta === "") return;
+
+            if (!statoGlobale["_listaCittaExtra"]) statoGlobale["_listaCittaExtra"] = [];
+            if (!statoGlobale["_listaCittaExtra"].includes(nomeCitta)) {
+                statoGlobale["_listaCittaExtra"].push(nomeCitta);
+            }
+
+            inputField.value = "";
+            renderizzaTabellaCompleta();
+            inviaStatoAlCloud();
         }
 
-        function eliminaCitta(nomeRegione, nomeCitta) {
-            if (!confirm(`Vuoi rimuovere "${nomeCitta}"?`)) return;
+        function eliminaCitta(nomeCitta) {
+            if (!confirm(`Vuoi davvero eliminare "${nomeCitta}" dalla lista?`)) return;
 
-            if (statoGlobale["_mappaCittaExtra"] && statoGlobale["_mappaCittaExtra"][nomeRegione]) {
-                statoGlobale["_mappaCittaExtra"][nomeRegione] = statoGlobale["_mappaCittaExtra"][nomeRegione].filter(c => c !== nomeCitta);
+            if (statoGlobale["_listaCittaExtra"]) {
+                statoGlobale["_listaCittaExtra"] = statoGlobale["_listaCittaExtra"].filter(c => c !== nomeCitta);
             }
 
             let safeId = generaSafeId(nomeCitta);
@@ -283,17 +340,17 @@
             delete statoGlobale[`${safeId}_p4`];
 
             renderizzaTabellaCompleta();
-            salvaEInvia();
+            inviaStatoAlCloud();
         }
 
-        function modificaCitta(nomeRegione, vecchioNome) {
+        function modificaCitta(vecchioNome) {
             let nuovoNome = prompt(`Modifica il nome della città:`, vecchioNome);
             if (nuovoNome === null || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
             nuovoNome = nuovoNome.trim();
 
-            if (statoGlobale["_mappaCittaExtra"] && statoGlobale["_mappaCittaExtra"][nomeRegione]) {
-                let index = statoGlobale["_mappaCittaExtra"][nomeRegione].indexOf(vecchioNome);
-                if (index !== -1) statoGlobale["_mappaCittaExtra"][nomeRegione][index] = nuovoNome;
+            if (statoGlobale["_listaCittaExtra"]) {
+                let index = statoGlobale["_listaCittaExtra"].indexOf(vecchioNome);
+                if (index !== -1) statoGlobale["_listaCittaExtra"][index] = nuovoNome;
             }
 
             let vecchioSafeId = generaSafeId(vecchioNome);
@@ -307,32 +364,46 @@
             });
 
             renderizzaTabellaCompleta();
-            salvaEInvia();
+            inviaStatoAlCloud();
         }
 
-        async function salvaEInvia() {
+        function salvaCambio(cittaId, persona, checked) {
+            let chiave = `${cittaId}_${persona}`;
+            statoGlobale[chiave] = checked;
+            aggiornaSchermata();
+            inviaStatoAlCloud();
+        }
+
+        async function inviaStatoAlCloud() {
+            // Salva istantaneamente in locale per non perdere i clic in caso di disconnessione
             localStorage.setItem('tabellone_viaggi', JSON.stringify(statoGlobale));
             isSaving = true;
             try {
                 let risposta = await fetch(API_URL, {
-                    method: "PUT",
+                    method: "PUT", // Metodo corretto PUT per sovrascrivere in modo permanente i dati
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(statoGlobale)
                 });
-                if (risposta.ok) {
-                    indicator.innerHTML = "🟢 Sincronizzato sul Cloud";
+                if(risposta.ok) {
+                    indicator.innerHTML = "🟢 Connesso";
                     indicator.style.color = "green";
+                } else {
+                    throw new Error("Errore di invio");
                 }
             } catch (e) {
-                indicator.innerHTML = "⚠️ Errore Cloud - Salvato solo Locale";
+                indicator.innerHTML = "❌ Errore Cloud - Salvato in locale";
                 indicator.style.color = "red";
+                console.error("Errore invio cloud:", e);
             } finally {
                 isSaving = false;
             }
         }
 
+        // Avvio iniziale delle interfacce
         renderizzaTabellaCompleta();
         caricaDatiDalCloud();
+        
+        // Controlla e sincronizza le modifiche degli altri utenti ogni 4 secondi
         setInterval(caricaDatiDalCloud, 4000);
     </script>
 </body>
