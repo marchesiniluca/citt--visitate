@@ -40,7 +40,7 @@
   "sassuolo_p1": true,
   "imola_p1": true,
   "fidenza_p1": true,
-  "afragola_p1": true,
+  "afragola_p1": false,
   "_mappaCittaExtraRegione": {
     "Arzano": "Campania"
   },
