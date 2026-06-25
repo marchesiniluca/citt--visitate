@@ -119,8 +119,8 @@
 
     <div class="header-container">
         <div class="header-titolo">✈️ Città Visitate d'Italia</div>
-        <div class="subtitle">Aggiornamento automatico e condiviso</div>
-        <div id="status-indicator">⏳ Connessione...</div>
+        <div class="subtitle">Sincronizzato direttamente tramite GitHub Pages</div>
+        <div id="status-indicator">⏳ Inizializzazione...</div>
     </div>
 
     <div class="top-sticky-container">
@@ -154,9 +154,29 @@
     </div>
 
     <script>
-        // URL NATIVO E PULITO (Senza filtri antispam aziendali che bloccano il codice)
-        const API_URL = "https://api.npoint.io/cb8da9e69cba4ba8e1b9"; 
+        // =======================================================
+        // CONFIGURAZIONE GITHUB (CAMBIA SOLO LE RIGHE QUI SOTTO)
+        // =======================================================
+        const GH_CONFIG = {
+            owner: "IL_TUO_NOME_UTENTE_GITHUB",   // Scrivi qui il tuo username di GitHub (es. "luca-rossi")
+            repo: "IL_NOME_DEL_TUO_REPOSITORY",    // Il nome del tuo repository (es. "viaggi-italia")
+            path: "dati.json",                    // Il file che conterrà i salvataggi
+            branch: "main"                        // Di solito main o master
+        };
+
+        // Recupera il token salvato nel browser per evitare di metterlo nel codice pubblico
+        let GITHUB_TOKEN = localStorage.getItem('gh_travel_token');
+        if (!GITHUB_TOKEN) {
+            GITHUB_TOKEN = prompt("Inserisci il tuo GitHub Token (ghp_...):\n(Verrà salvato in sicurezza solo sul tuo browser)");
+            if (GITHUB_TOKEN) {
+                localStorage.setItem('gh_travel_token', GITHUB_TOKEN.trim());
+            }
+        }
+
+        const GITHUB_API_URL = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`;
+
         let statoGlobale = {};
+        let currentSha = null; 
         let isSaving = false;
 
         const datiViaggi = {
@@ -260,26 +280,37 @@
             }
         }
 
-        async function caricaDatiDalCloud() {
-            if (isSaving) return;
+        async function caricaDatiDaGitHub() {
+            if (isSaving || !GITHUB_TOKEN) return;
             try {
-                let risposta = await fetch(API_URL);
+                let risposta = await fetch(GITHUB_API_URL, {
+                    headers: { "Authorization": `token ${GITHUB_TOKEN}` }
+                });
+                
                 if(risposta.ok) {
-                    let datiCloud = await risposta.json();
+                    let jsonRes = await risposta.json();
+                    currentSha = jsonRes.sha;
+                    let datiCloud = JSON.parse(atob(jsonRes.content));
+                    
                     if (datiCloud && typeof datiCloud === 'object') {
-                        statoGlobale = datiCloud;
-                        localStorage.setItem('tabellone_viaggi', JSON.stringify(statoGlobale));
-                        renderizzaTabellaCompleta();
-                        indicator.innerHTML = "🟢 Connesso";
+                        if (JSON.stringify(statoGlobale) !== JSON.stringify(datiCloud)) {
+                            statoGlobale = datiCloud;
+                            localStorage.setItem('tabellone_viaggi', JSON.stringify(statoGlobale));
+                            renderizzaTabellaCompleta();
+                        } else {
+                            aggiornaSchermata();
+                        }
+                        indicator.innerHTML = "🟢 GitHub Sincronizzato";
                         indicator.style.color = "green";
                     }
+                } else if (risposta.status === 404) {
+                    inviaStatoAGitHub();
                 } else {
-                    throw new Error("Server KO");
+                    throw new Error("GitHub KO");
                 }
             } catch (e) {
-                indicator.innerHTML = "⚠️ Sincronizzazione locale...";
+                indicator.innerHTML = "⚠️ Errore o Token mancante...";
                 indicator.style.color = "orange";
-                renderizzaTabellaCompleta();
             }
         }
 
@@ -316,7 +347,7 @@
 
             inputField.value = "";
             renderizzaTabellaCompleta();
-            inviaStatoAlCloud();
+            inviaStatoAGitHub();
         }
 
         function eliminaCitta(nomeCitta) {
@@ -333,7 +364,7 @@
             delete statoGlobale[`${safeId}_p4`];
 
             renderizzaTabellaCompleta();
-            inviaStatoAlCloud();
+            inviaStatoAGitHub();
         }
 
         function modificaCitta(vecchioNome) {
@@ -357,33 +388,54 @@
             });
 
             renderizzaTabellaCompleta();
-            inviaStatoAlCloud();
+            inviaStatoAGitHub();
         }
 
         function salvaCambio(cittaId, persona, checked) {
             let chiave = `${cittaId}_${persona}`;
             statoGlobale[chiave] = checked;
             aggiornaSchermata();
-            inviaStatoAlCloud();
+            inviaStatoAGitHub();
         }
 
-        async function inviaStatoAlCloud() {
+        async function inviaStatoAGitHub() {
+            if (!GITHUB_TOKEN) return;
             localStorage.setItem('tabellone_viaggi', JSON.stringify(statoGlobale));
             isSaving = true;
+            indicator.innerHTML = "🔄 Salvataggio...";
+            indicator.style.color = "blue";
+            
             try {
-                let risposta = await fetch(API_URL, {
+                let contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(statoGlobale, null, 2))));
+                let bodyPayload = {
+                    message: "Aggiornamento tabellone viaggi via Web App",
+                    content: contentBase64,
+                    branch: GH_CONFIG.branch
+                };
+                
+                if (currentSha) {
+                    bodyPayload.sha = currentSha;
+                }
+
+                let risposta = await fetch(GITHUB_API_URL, {
                     method: "PUT", 
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(statoGlobale)
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `token ${GITHUB_TOKEN}`
+                    },
+                    body: JSON.stringify(bodyPayload)
                 });
+                
                 if(risposta.ok) {
-                    indicator.innerHTML = "🟢 Connesso";
+                    let jsonRes = await risposta.json();
+                    currentSha = jsonRes.content.sha;
+                    indicator.innerHTML = "🟢 GitHub Sincronizzato";
                     indicator.style.color = "green";
                 } else {
-                    throw new Error("Errore invio");
+                    throw new Error("Errore GitHub");
                 }
             } catch (e) {
-                indicator.innerHTML = "❌ Errore Cloud - Salvato in locale";
+                indicator.innerHTML = "❌ Errore di connessione";
                 indicator.style.color = "red";
             } finally {
                 isSaving = false;
@@ -391,8 +443,8 @@
         }
 
         renderizzaTabellaCompleta();
-        caricaDatiDalCloud();
-        setInterval(caricaDatiDalCloud, 4000);
+        caricaDatiDaGitHub();
+        setInterval(caricaDatiDaGitHub, 6000);
     </script>
 </body>
 </html>
