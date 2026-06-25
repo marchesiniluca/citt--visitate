@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tabellone Viaggi Italia</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0 0 30px 0; color: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0 0 40px 0; color: #333; }
         
         .header-titolo { text-align: center; color: #2f4f4f; font-size: 22px; margin: 15px 0 5px 0; font-weight: bold; }
-        .subtitle { text-align: center; color: #666; margin-bottom: 10px; font-size: 13px; }
         
         /* COLORI UTENTI */
         .color-p1 { color: #3498db !important; }
@@ -42,7 +41,6 @@
         .stat-name { font-weight: bold; font-size: 12px; }
         .stat-score { font-size: 18px; font-weight: bold; margin-top: 2px; }
         
-        /* Testata fissa */
         .fake-header {
             background-color: #2f4f4f;
             color: white;
@@ -54,10 +52,8 @@
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
             padding: 10px 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .fake-header div:first-child { text-align: left; padding-left: 10px; }
-        .fake-header div.p-name { text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
 
         /* TABELLA */
         .table-container { padding: 0 10px 20px 10px; }
@@ -72,31 +68,31 @@
         
         input[type="checkbox"] { transform: scale(1.6); cursor: pointer; width: 20px; height: 20px; }
 
-        /* AZIONI EXTRA SULLE CITTÀ (Ottimizzate per touch) */
         .actions-container { display: flex; gap: 8px; padding-right: 5px; }
         .btn-action { background: #f4f7f6; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; padding: 6px 8px; font-size: 14px; }
         
-        /* AGGIUNGI CITTÀ PER REGIONE (Ottimizzate per smartphone) */
         .add-row { background-color: #fafafa !important; }
         .add-bar-region { display: flex; gap: 8px; padding: 8px 10px; }
         .add-bar-region input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; }
         .add-bar-region button { background-color: #008b8b; color: white; border: none; padding: 0 18px; border-radius: 8px; font-size: 18px; font-weight: bold; }
 
-        /* Loader */
-        #sync-status { text-align: center; font-size: 11px; color: #888; margin-bottom: 5px; height: 15px; }
+        #sync-status { text-align: center; font-size: 11px; color: #888; margin-bottom: 5px; height: 15px; font-weight: bold; }
+        
+        /* BACKUP BOTTOM */
+        .backup-zone { text-align: center; padding: 15px; margin-top: 20px; border-top: 1px dashed #ccc; }
+        .btn-backup { background: #666; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; margin: 0 5px; }
 
         @media (max-width: 600px) { 
             .dashboard { grid-template-columns: repeat(2, 1fr); }
             td { font-size: 14px; padding: 10px 0; }
             .col-citta { flex-direction: column; align-items: flex-start; gap: 8px; }
-            .actions-container { padding-left: 0; padding-bottom: 5px; }
         }
     </style>
 </head>
 <body>
 
     <div class="header-titolo">✈️ Città Visitate</div>
-    <div id="sync-status">Caricamento veloce...</div>
+    <div id="sync-status">Avvio in corso...</div>
 
     <div class="top-sticky-container">
         <div class="dashboard">
@@ -108,10 +104,10 @@
 
         <div class="fake-header">
             <div>Città</div>
-            <div class="p-name color-p1">Luca</div>
-            <div class="p-name color-p2">Elena</div>
-            <div class="p-name color-p3">Alessia</div>
-            <div class="p-name color-p4">Filippo</div>
+            <div class="color-p1">Luca</div>
+            <div class="color-p2">Elena</div>
+            <div class="color-p3">Alessia</div>
+            <div class="color-p4">Filippo</div>
         </div>
     </div>
 
@@ -122,19 +118,27 @@
         </table>
     </div>
 
+    <div class="backup-zone">
+        <button class="btn-backup" onclick="esportaBackup()">📋 Copia Backup Dati</button>
+        <button class="btn-backup" onclick="importaBackup()">💾 Ripristina Backup</button>
+    </div>
+
     <script>
         const API_URL = "https://api.npoint.io/cb8da9e69cba4ba8e1b9"; 
         let statoGlobale = {};
-        let isSaving = false;
         let ultimaFirmaStruttura = "";
+        let salvaTimeout = null;
 
-        // RECUPERO ISTANTANEO DALLA MEMORIA DEL TELEFONO AL RICARICAMENTO
-        let datiLocali = localStorage.getItem("viaggiItaliaCache");
-        if (datiLocali) {
+        // 1. CARICAMENTO IMMEDIATO DI SICUREZZA DA LOCAL STORAGE
+        let cacheSalvata = localStorage.getItem("viaggiCachePro");
+        if (cacheSalvata) {
             try {
-                statoGlobale = JSON.parse(datiLocali);
-                ultimaFirmaStruttura = generaFirmaStruttura(statoGlobale);
-            } catch(e) { console.error("Errore lettura cache"); }
+                let datiScritti = JSON.parse(cacheSalvata);
+                if (datiScritti && Object.keys(datiScritti).length > 0) {
+                    statoGlobale = datiScritti;
+                    ultimaFirmaStruttura = generaFirmaStruttura(statoGlobale);
+                }
+            } catch(e) { console.error(e); }
         }
 
         const datiViaggi = {
@@ -178,11 +182,9 @@
 
             for (const [regione, cittaBase] of Object.entries(datiViaggi)) {
                 let rId = generaSafeId(regione);
-                
                 tbody.insertAdjacentHTML('beforeend', `<tr id="hdr_${rId}"><td colspan="5" class="regione-header">${regione}</td></tr>`);
                 
                 let cittaExtra = statoGlobale[`extra_${rId}`] || [];
-                
                 cittaBase.sort((a, b) => a.localeCompare(b)).forEach(c => appendiRigaCitta(tbody, c, rId, false));
                 cittaExtra.forEach(c => appendiRigaCitta(tbody, c, rId, true));
 
@@ -204,17 +206,14 @@
             let safeId = generaSafeId(citta);
             let tastiAzione = isExtra ? `
                 <div class="actions-container">
-                    <button class="btn-action" onclick="modificaCitta('${rId}', '${citta}')" title="Rinomina">✏️</button>
-                    <button class="btn-action" onclick="eliminaCitta('${rId}', '${citta}')" title="Elimina">🗑️</button>
+                    <button class="btn-action" onclick="modificaCitta('${rId}', '${citta}')">✏️</button>
+                    <button class="btn-action" onclick="eliminaCitta('${rId}', '${citta}')">🗑️</button>
                 </div>
             ` : '';
 
             tbody.insertAdjacentHTML('beforeend', `
                 <tr id="row_${safeId}">
-                    <td class="col-citta">
-                        <span>${citta}</span>
-                        ${tastiAzione}
-                    </td>
+                    <td class="col-citta"><span>${citta}</span>${tastiAzione}</td>
                     <td class="col-check"><input type="checkbox" id="${safeId}_p1" onclick="salvaCheck('${safeId}', 'p1', this.checked)"></td>
                     <td class="col-check"><input type="checkbox" id="${safeId}_p2" onclick="salvaCheck('${safeId}', 'p2', this.checked)"></td>
                     <td class="col-check"><input type="checkbox" id="${safeId}_p3" onclick="salvaCheck('${safeId}', 'p3', this.checked)"></td>
@@ -225,11 +224,9 @@
 
         function aggiornaSpunteEPunteggi() {
             let punteggi = { p1: 0, p2: 0, p3: 0, p4: 0 };
-
             document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                 let [cittaId, persona] = checkbox.id.split('_');
                 let chiave = `${cittaId}_${persona}`;
-                
                 if (statoGlobale[chiave] === true) {
                     checkbox.checked = true;
                     punteggi[persona]++;
@@ -237,57 +234,49 @@
                     checkbox.checked = false;
                 }
             });
-
             document.getElementById('score-p1').innerText = punteggi.p1;
             document.getElementById('score-p2').innerText = punteggi.p2;
             document.getElementById('score-p3').innerText = punteggi.p3;
             document.getElementById('score-p4').innerText = punteggi.p4;
         }
 
-        async function eseguiModificaSicura(modificaFn) {
-            document.getElementById('sync-status').innerText = "Salvataggio in corso...";
-            isSaving = true;
-            try {
-                let res = await fetch(API_URL);
-                let datiAggiornati = await res.json();
-                if(!datiAggiornati || typeof datiAggiornati !== 'object') datiAggiornati = {};
-                
-                modificaFn(datiAggiornati);
-                
-                await fetch(API_URL, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(datiAggiornati)
-                });
-                
-                statoGlobale = datiAggiornati;
-                localStorage.setItem("viaggiItaliaCache", JSON.stringify(statoGlobale)); // SALVA NEL TELEFONO
-                
-                document.getElementById('sync-status').innerText = "Sincronizzato ✔️";
-                
-                let nuovaFirma = generaFirmaStruttura(statoGlobale);
-                if (nuovaFirma !== ultimaFirmaStruttura) {
-                    ultimaFirmaStruttura = nuovaFirma;
-                    costruisciTabella();
-                } else {
-                    aggiornaSpunteEPunteggi();
+        // SALVATAGGIO OTTIMIZZATO (Debounced e anti-cancellazione)
+        function pianificaSalvataggioCloud() {
+            document.getElementById('sync-status').innerText = "Modifica locale salvata... ⏳";
+            if (salvaTimeout) clearTimeout(salvaTimeout);
+            
+            salvaTimeout = setTimeout(async () => {
+                document.getElementById('sync-status').innerText = "Salvataggio nel cloud...";
+                try {
+                    // Scarica l'ultimo per non sovrascrivere gli altri
+                    let res = await fetch(API_URL);
+                    let datiCloud = await res.json();
+                    
+                    // Se il cloud risponde vuoto o rotto, non unire nulla, usa il locale
+                    if (datiCloud && typeof datiCloud === 'object' && Object.keys(datiCloud).length > 0) {
+                        statoGlobale = Object.assign({}, datiCloud, statoGlobale);
+                    }
+
+                    // Invia dati puliti
+                    await fetch(API_URL, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(statoGlobale)
+                    });
+                    
+                    localStorage.setItem("viaggiCachePro", JSON.stringify(statoGlobale));
+                    document.getElementById('sync-status').innerText = "Sincronizzato ✔️";
+                } catch(e) {
+                    document.getElementById('sync-status').innerText = "⚠️ Errore rete. Salvato solo sul telefono!";
                 }
-            } catch (e) {
-                console.error("Errore Sync:", e);
-                document.getElementById('sync-status').innerText = "Riprovo... (Nessuna rete)";
-            } finally {
-                isSaving = false;
-            }
+            }, 1200); // Aspetta un secondo prima di inviare
         }
 
         function salvaCheck(cittaId, persona, checked) {
             statoGlobale[`${cittaId}_${persona}`] = checked;
-            localStorage.setItem("viaggiItaliaCache", JSON.stringify(statoGlobale)); // SALVA SUBITO SUL TELEFONO
+            localStorage.setItem("viaggiCachePro", JSON.stringify(statoGlobale)); // Salva SUBITO nel telefono
             aggiornaSpunteEPunteggi();
-            
-            eseguiModificaSicura((dati) => {
-                dati[`${cittaId}_${persona}`] = checked;
-            });
+            pianificaSalvataggioCloud();
         }
 
         function aggiungiCitta(rId, nomeRegione) {
@@ -295,25 +284,29 @@
             let nomeCitta = inputField.value.trim();
             if (nomeCitta === "") return;
 
-            eseguiModificaSicura((dati) => {
-                if (!dati[`extra_${rId}`]) dati[`extra_${rId}`] = [];
-                if (!dati[`extra_${rId}`].includes(nomeCitta)) {
-                    dati[`extra_${rId}`].push(nomeCitta);
-                }
-            });
+            if (!statoGlobale[`extra_${rId}`]) statoGlobale[`extra_${rId}`] = [];
+            if (!statoGlobale[`extra_${rId}`].includes(nomeCitta)) {
+                statoGlobale[`extra_${rId}`].push(nomeCitta);
+            }
+            
+            localStorage.setItem("viaggiCachePro", JSON.stringify(statoGlobale));
+            costruisciTabella();
+            pianificaSalvataggioCloud();
             inputField.value = ""; 
         }
 
         function eliminaCitta(rId, nomeCitta) {
             if (!confirm(`Vuoi davvero eliminare "${nomeCitta}"?`)) return;
 
-            eseguiModificaSicura((dati) => {
-                if (dati[`extra_${rId}`]) {
-                    dati[`extra_${rId}`] = dati[`extra_${rId}`].filter(c => c !== nomeCitta);
-                }
-                let safeId = generaSafeId(nomeCitta);
-                ['p1', 'p2', 'p3', 'p4'].forEach(p => delete dati[`${safeId}_${p}`]);
-            });
+            if (statoGlobale[`extra_${rId}`]) {
+                statoGlobale[`extra_${rId}`] = statoGlobale[`extra_${rId}`].filter(c => c !== nomeCitta);
+            }
+            let safeId = generaSafeId(nomeCitta);
+            ['p1', 'p2', 'p3', 'p4'].forEach(p => delete statoGlobale[`${safeId}_${p}`]);
+            
+            localStorage.setItem("viaggiCachePro", JSON.stringify(statoGlobale));
+            costruisciTabella();
+            pianificaSalvataggioCloud();
         }
 
         function modificaCitta(rId, vecchioNome) {
@@ -321,31 +314,38 @@
             if (!nuovoNome || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
             nuovoNome = nuovoNome.trim();
 
-            eseguiModificaSicura((dati) => {
-                if (dati[`extra_${rId}`]) {
-                    let index = dati[`extra_${rId}`].indexOf(vecchioNome);
-                    if (index !== -1) dati[`extra_${rId}`][index] = nuovoNome;
+            if (statoGlobale[`extra_${rId}`]) {
+                let index = statoGlobale[`extra_${rId}`].indexOf(vecchioNome);
+                if (index !== -1) statoGlobale[`extra_${rId}`][index] = nuovoNome;
+            }
+            let vecchioSafeId = generaSafeId(vecchioNome);
+            let nuovoSafeId = generaSafeId(nuovoNome);
+            ['p1', 'p2', 'p3', 'p4'].forEach(p => {
+                if (statoGlobale[`${vecchioSafeId}_${p}`] !== undefined) {
+                    statoGlobale[`${nuovoSafeId}_${p}`] = statoGlobale[`${vecchioSafeId}_${p}`];
+                    delete statoGlobale[`${vecchioSafeId}_${p}`];
                 }
-                let vecchioSafeId = generaSafeId(vecchioNome);
-                let nuovoSafeId = generaSafeId(nuovoNome);
-                ['p1', 'p2', 'p3', 'p4'].forEach(p => {
-                    if (dati[`${vecchioSafeId}_${p}`] !== undefined) {
-                        dati[`${nuovoSafeId}_${p}`] = dati[`${vecchioSafeId}_${p}`];
-                        delete dati[`${vecchioSafeId}_${p}`];
-                    }
-                });
             });
+            
+            localStorage.setItem("viaggiCachePro", JSON.stringify(statoGlobale));
+            costruisciTabella();
+            pianificaSalvataggioCloud();
         }
 
+        // SCARICAMENTO PASSIVO SICURO
         async function caricaDatiDalCloud() {
-            if (isSaving) return; 
+            if (salvaTimeout) return; // Se sto scrivendo io, non scaricare nulla
             try {
                 let res = await fetch(API_URL);
                 let nuoviDati = await res.json();
-                if (!nuoviDati || typeof nuoviDati !== 'object') nuoviDati = {};
+                
+                // BLOCCA IL RESET: Se il server risponde vuoto o rotto, ignoralo per non perdere i dati locali
+                if (!nuoviDati || typeof nuoviDati !== 'object' || Object.keys(nuoviDati).length === 0) {
+                    return; 
+                }
                 
                 statoGlobale = nuoviDati;
-                localStorage.setItem("viaggiItaliaCache", JSON.stringify(statoGlobale)); // AGGIORNA LA MEMORIA DEL TELEFONO
+                localStorage.setItem("viaggiCachePro", JSON.stringify(statoGlobale)); 
                 
                 let nuovaFirma = generaFirmaStruttura(statoGlobale);
                 if (nuovaFirma !== ultimaFirmaStruttura) {
@@ -354,15 +354,37 @@
                 } else {
                     aggiornaSpunteEPunteggi();
                 }
-                document.getElementById('sync-status').innerText = "Ultimo sync: " + new Date().toLocaleTimeString();
+                document.getElementById('sync-status').innerText = "Aggiornato: " + new Date().toLocaleTimeString();
             } catch (e) {
-                console.error("Nessuna connessione");
+                document.getElementById('sync-status').innerText = "Connessione debole... (Dati protetti)";
             }
         }
 
+        // STRUMENTI DI BACKUP
+        function esportaBackup() {
+            navigator.clipboard.writeText(JSON.stringify(statoGlobale));
+            alert("Codice di backup copiato negli appunti del telefono! Incollalo e salvalo su WhatsApp o nelle note.");
+        }
+
+        function importaBackup() {
+            let stringa = prompt("Incolla qui il codice di backup precedentemente copiato:");
+            if(!stringa) return;
+            try {
+                let dati = JSON.parse(stringa);
+                if(dati && typeof dati === 'object') {
+                    statoGlobale = dati;
+                    localStorage.setItem("viaggiCachePro", JSON.stringify(statoGlobale));
+                    costruisciTabella();
+                    pianificaSalvataggioCloud();
+                    alert("Dati ripristinati correttamente!");
+                }
+            } catch(e) { alert("Codice non valido."); }
+        }
+
+        // Avvio
         costruisciTabella(); 
         caricaDatiDalCloud(); 
-        setInterval(caricaDatiDalCloud, 5000); 
+        setInterval(caricaDatiDalCloud, 7000); // Sincronizzazione automatica ogni 7 secondi
     </script>
 </body>
 </html>
