@@ -25,7 +25,7 @@
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
             background-color: var(--bg-color); 
             margin: 0; 
-            padding: 0 0 90px 0; 
+            padding: 0 0 40px 0; 
             color: var(--text-color);
             line-height: 1.5;
         }
@@ -173,7 +173,6 @@
             border-bottom: 1px solid var(--border-color);
             transition: background-color 0.15s;
         }
-        .citta-row:last-child { border-bottom: none; }
         .citta-row:nth-child(even) { background-color: #fbfdfd; }
         .citta-row:hover { background-color: #f4f8f8; }
         
@@ -196,45 +195,33 @@
         .btn-action { background: none; border: none; cursor: pointer; padding: 2px; font-size: 12px; }
         .btn-action:hover { transform: scale(1.15); }
         
-        .add-city-bar {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: white;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
-            padding: 15px 20px;
+        /* Nuova barra inserimento interna alla card regione */
+        .regione-add-row {
             display: flex;
-            gap: 12px;
-            z-index: 1002;
-            max-width: 600px;
-            margin: 0 auto;
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
-            border: 1px solid var(--border-color);
+            gap: 10px;
+            padding: 12px 20px;
+            background-color: #fafbfc;
+            border-top: 1px dashed var(--border-color);
         }
-        .add-city-bar input[type="text"] {
+        .regione-add-row input {
             flex: 1;
-            padding: 12px 18px;
+            padding: 8px 14px;
             border: 1px solid #ced4da;
-            border-radius: 24px;
-            font-size: 14px;
+            border-radius: 6px;
+            font-size: 13px;
             outline: none;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
         }
-        .add-city-bar input[type="text"]:focus { border-color: var(--secondary-color); }
-        
-        .add-city-bar button {
-            background: linear-gradient(135deg, var(--secondary-color), #006666);
+        .regione-add-row input:focus { border-color: var(--secondary-color); }
+        .regione-add-row button {
+            background: var(--secondary-color);
             color: white;
             border: none;
-            padding: 0 24px;
-            border-radius: 24px;
-            font-size: 18px;
+            padding: 0 16px;
+            border-radius: 6px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,139,139,0.2);
-            transition: all 0.2s;
         }
-        .add-city-bar button:active { transform: scale(0.95); }
 
         @media (max-width: 768px) { 
             #status-indicator {
@@ -248,7 +235,7 @@
             .table-header-row, .citta-row { padding: 10px 10px; font-size: 12px; grid-template-columns: 1.8fr repeat(4, 1fr); }
             .col-citta { font-size: 13px; }
             input[type="checkbox"] { transform: scale(1.15); }
-            .add-city-bar { border-radius: 0; max-width: 100%; }
+            .regione-add-row { padding: 10px; }
         }
     </style>
 </head>
@@ -274,11 +261,6 @@
     </div>
 
     <div class="main-content" id="regions-container"></div>
-
-    <div class="add-city-bar">
-        <input type="text" id="nuova-citta-input" placeholder="Aggiungi una nuova città personalizzata...">
-        <button onclick="aggiungiNuovaCitta()">+</button>
-    </div>
 
     <script>
         const GH_CONFIG = {
@@ -323,7 +305,8 @@
             "Trentino-Alto Adige": ["Trento", "Bolzano", "Rovereto", "Merano", "Bressanone", "Pergine Valsugana", "Laives", "Arco", "Riva del Garda", "Brunico", "Appiano sulla Strada del Vino", "Lana", "Caldaro sulla Strada del Vino", "Renon", "Vipiteno", "Ortisei", "Cavalese", "Canazei", "Pinzolo", "Madonna di Campiglio", "Predazzo", "Mezzolombardo", "Borgo Valsugana", "Cles", "Levico Terme"],
             "Umbria": ["Perugia", "Terni", "Foligno", "Città di Castello", "Spoleto", "Gubbio", "Assisi", "Todi", "Orvieto", "Narni", "Bastia Umbra", "Marsciano", "Corciano", "Umbertide", "Castiglione del Lago", "Gualdo Tadino", "Amelia", "Spello", "Deruta", "Norcia", "Cascia", "Monteleone di Spoleto", "Panicale", "Bevagna", "Trevi"],
             "Valle d'Aosta": ["Aosta", "Saint-Vincent", "Châtillon", "Sarre", "Pont-Saint-Martin", "Quart", "Saint-Christophe", "Gressan", "Courmayeur", "Donnas", "Brusson", "Gressoney-Saint-Jean", "Cogne", "Breuil-Cervinia", "Valtournenche", "Morgex", "La Salle", "Nus", "Fenis", "Verres", "Pre-Saint-Didier", "Arvier", "Bard", "Saint-Pierre", "Etroubles"],
-            "Veneto": ["Venezia", "Verona", "Padova", "Vicenza", "Treviso", "Rovigo", "Chioggia", "Bassano del Grappa", "San Donà di Piave", "Schio", "Mire", "Conegliano", "Castelfranco Veneto", "Villafranca di Verona", "Belluno", "Feltre", "Cortina d'Ampezzo", "Jesolo", "Caorle", "Peschiera del Garda", "Lazise", "Bardolino", "Asolo", "Marostica", "Arqua Petrarca"]
+            "Veneto": ["Venezia", "Verona", "Padova", "Vicenza", "Treviso", "Rovigo", "Chioggia", "Bassano del Grappa", "San Donà di Piave", "Schio", "Mire", "Conegliano", "Castelfranco Veneto", "Villafranca di Verona", "Belluno", "Feltre", "Cortina d'Ampezzo", "Jesolo", "Caorle", "Peschiera del Garda", "Lazise", "Bardolino", "Asolo", "Marostica", "Arqua Petrarca"],
+            "📌 Altre Località": []
         };
 
         if(localStorage.getItem('tabellone_viaggi')) {
@@ -333,22 +316,23 @@
         function renderizzaTabellaCompleta() {
             container.innerHTML = "";
 
+            // Organizziamo le città extra inserite dagli utenti nelle rispettive mappe regionali mappate in base a dove l'utente ha deciso di metterle
             let mappaRegioniCitta = {};
-            for (const [regione, cittaList] of Object.entries(datiViaggi)) {
-                mappaRegioniCitta[regione] = [...cittaList];
+            for (const regione of Object.keys(datiViaggi)) {
+                mappaRegioniCitta[regione] = [...datiViaggi[regione]];
             }
-            mappaRegioniCitta["📌 Altre Località"] = [];
 
-            if (statoGlobale["_listaCittaExtra"]) {
-                statoGlobale["_listaCittaExtra"].forEach(cittaNome => {
-                    let regioneTrovata = trovaNomeRegione(cittaNome);
-                    mappaRegioniCitta[regioneTrovata].push(cittaNome);
-                });
+            if (statoGlobale["_mappaCittaExtraRegione"]) {
+                for (const [cittaNome, regioneDest] of Object.entries(statoGlobale["_mappaCittaExtraRegione"])) {
+                    if (mappaRegioniCitta[regioneDest]) {
+                        mappaRegioniCitta[regioneDest].push(cittaNome);
+                    } else {
+                        mappaRegioniCitta["📌 Altre Località"].push(cittaNome);
+                    }
+                }
             }
 
             for (const [regione, cittaList] of Object.entries(mappaRegioniCitta)) {
-                if (cittaList.length === 0) continue;
-
                 let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
                 let isExtraGroup = regione === "📌 Altre Località";
 
@@ -365,6 +349,10 @@
                             <div>Filippo</div>
                         </div>
                         <div id="body_${rId}"></div>
+                        <div class="regione-add-row">
+                            <input type="text" id="input_add_${rId}" placeholder="Aggiungi città in ${regione}...">
+                            <button onclick="aggiungiCittaInRegione('${regione}', 'input_add_${rId}')">+</button>
+                        </div>
                     </div>
                 `;
                 container.insertAdjacentHTML('beforeend', cardHTML);
@@ -372,7 +360,7 @@
                 let bodyRegione = document.getElementById(`body_${rId}`);
                 
                 cittaList.forEach(citta => {
-                    let isExtraCitta = statoGlobale["_listaCittaExtra"] && statoGlobale["_listaCittaExtra"].includes(citta);
+                    let isExtraCitta = statoGlobale["_mappaCittaExtraRegione"] && statoGlobale["_mappaCittaExtraRegione"][citta];
                     let safeId = generaSafeId(citta);
 
                     let tastiAzione = isExtraCitta ? `
@@ -398,15 +386,6 @@
             aggiornaSchermata();
         }
 
-        function trovaNomeRegione(nomeCitta) {
-            let nomeNormalizzato = nomeCitta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-            for (const [regione, cittaList] of Object.entries(datiViaggi)) {
-                let trovato = cittaList.some(c => c.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === nomeNormalizzato);
-                if (trovato) return region;
-            }
-            return "📌 Altre Località";
-        }
-
         function generaSafeId(citta) {
             return citta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
         }
@@ -414,7 +393,6 @@
         async function caricaDatiDaGitHub() {
             if (isSaving || !GITHUB_TOKEN) return;
             try {
-                // Aggiungiamo un parametro casuale "?nocache=" alla fine dell'URL per forzare il telefono a scaricare i dati reali
                 const urlNocache = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}?nocache=${new Date().getTime()}`;
                 
                 let risposta = await fetch(urlNocache, {
@@ -485,23 +463,26 @@
                     }
                 });
 
+                let rowAdd = card.querySelector('.regione-add-row');
                 if (rigaVisibileNellaCard || query === "") {
                     card.style.display = 'block';
+                    if(rowAdd) rowAdd.style.display = 'flex';
                 } else {
                     card.style.display = 'none';
+                    if(rowAdd) rowAdd.style.display = 'none';
                 }
             });
         }
 
-        function aggiungiNuovaCitta() {
-            let inputField = document.getElementById('nuova-citta-input');
+        function aggiungiCittaInRegione(regioneNome, inputId) {
+            let inputField = document.getElementById(inputId);
             let nomeCitta = inputField.value.trim();
             if (nomeCitta === "") return;
 
-            if (!statoGlobale["_listaCittaExtra"]) statoGlobale["_listaCittaExtra"] = [];
-            if (!statoGlobale["_listaCittaExtra"].includes(nomeCitta)) {
-                statoGlobale["_listaCittaExtra"].push(nomeCitta);
-            }
+            if (!statoGlobale["_mappaCittaExtraRegione"]) statoGlobale["_mappaCittaExtraRegione"] = {};
+            
+            // Collega la città alla regione da cui viene inserita
+            statoGlobale["_mappaCittaExtraRegione"][nomeCitta] = regioneNome;
 
             inputField.value = "";
             renderizzaTabellaCompleta();
@@ -511,8 +492,8 @@
         function eliminaCitta(nomeCitta) {
             if (!confirm(`Vuoi davvero eliminare "${nomeCitta}" dalla lista?`)) return;
 
-            if (statoGlobale["_listaCittaExtra"]) {
-                statoGlobale["_listaCittaExtra"] = statoGlobale["_listaCittaExtra"].filter(c => c !== nomeCitta);
+            if (statoGlobale["_mappaCittaExtraRegione"]) {
+                delete statoGlobale["_mappaCittaExtraRegione"][nomeCitta];
             }
 
             let safeId = generaSafeId(nomeCitta);
@@ -530,9 +511,10 @@
             if (nuovoNome === null || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
             nuovoNome = nuovoNome.trim();
 
-            if (statoGlobale["_listaCittaExtra"]) {
-                let index = statoGlobale["_listaCittaExtra"].indexOf(vecchioNome);
-                if (index !== -1) statoGlobale["_listaCittaExtra"][index] = nuovoNome;
+            if (statoGlobale["_mappaCittaExtraRegione"]) {
+                let regioneAppartenenza = statoGlobale["_mappaCittaExtraRegione"][vecchioNome];
+                delete statoGlobale["_mappaCittaExtraRegione"][vecchioNome];
+                statoGlobale["_mappaCittaExtraRegione"][nuovoNome] = regioneAppartenenza;
             }
 
             let vecchioSafeId = generaSafeId(vecchioNome);
@@ -603,7 +585,7 @@
 
         renderizzaTabellaCompleta();
         caricaDatiDaGitHub();
-        setInterval(caricaDatiDaGitHub, 4000); // Controlla aggiornamenti ogni 4 secondi anziché 6
+        setInterval(caricaDatiDaGitHub, 4000);
     </script>
 </body>
 </html>
