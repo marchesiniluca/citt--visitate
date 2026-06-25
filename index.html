@@ -120,7 +120,7 @@
 <body>
 
     <div class="header-titolo">✈️ Città Visitate d'Italia</div>
-    <div class="subtitle">Aggiornamento condiviso e salvataggio in tempo reale</div>
+    <div class="subtitle">Aggiornamento automatico e salvataggio condiviso in tempo reale</div>
 
     <div class="top-sticky-container">
         <div class="dashboard">
@@ -153,11 +153,12 @@
     </div>
 
     <script>
-        // URL pulito estratto dal filtro aziendale
+        // Link diretto pulito e sbloccato per npoint
         const API_URL = "https://api.npoint.io/cb8da9e69cba4ba8e1b9"; 
         let statoGlobale = {};
-        let isSaving = false; // Evita conflitti di rete simultanei
+        let isSaving = false; // Flag di controllo per evitare conflitti di rete simultanei
 
+        // Database completo delle 20 regioni d'Italia (25 città ciascuna)
         const datiViaggi = {
             "Abruzzo": ["L'Aquila", "Pescara", "Chieti", "Teramo", "Montesilvano", "Avezzano", "Vasto", "Lanciano", "Sulmona", "Roseto degli Abruzzi", "Ortona", "Francavilla al Mare", "Giulianova", "San Salvo", "Spoltore", "Alba Adriatica", "Atri", "Martinsicuro", "Silvi", "Pineto", "Pescasseroli", "Roccaraso", "Scanno", "Santo Stefano di Sessanio", "Castelli"],
             "Basilicata": ["Potenza", "Matera", "Melfi", "Pisticci", "Lavello", "Rionero in Vulture", "Lauria", "Bernalda", "Venosa", "Avigliano", "Montescaglioso", "Ferrandina", "Maratea", "Scanzano Jonico", "Policoro", "Tursi", "Lagonegro", "Senise", "Rotonda", "Viggiano", "Genzano di Lucania", "Acerenza", "Castelmezzano", "Pietrapertosa", "Aliano"],
@@ -230,7 +231,7 @@
         }
 
         async function caricaDatiDalCloud() {
-            if (isSaving) return; // Se stiamo salvando, non sovrascrivere lo stato locale
+            if (isSaving) return; // Se stiamo salvando locali, congela il fetch per evitare sovrascritture brutali
             try {
                 let risposta = await fetch(API_URL);
                 let nuoviDati = await risposta.json();
@@ -238,7 +239,7 @@
                 
                 statoGlobale = nuoviDati;
 
-                // Gestione dinamica delle città extra
+                // Sincronizza visivamente le righe extra aggiunte o rimosse dagli altri
                 document.querySelectorAll('.riga-extra').forEach(el => el.remove());
                 document.getElementById("regione_altre_localita").style.display = "none";
 
@@ -321,7 +322,7 @@
         function modificaCitta(vecchioNome) {
             let nuovoNome = prompt(`Modifica il nome della città:`, vecchioNome);
             if (nuovoNome === null || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
-            nuovoNome = nuovoNome.trim();
+            nuovoNome = nuevoNome.trim();
 
             if (statoGlobale["_listaCittaExtra"]) {
                 let index = statoGlobale["_listaCittaExtra"].indexOf(vecchioNome);
@@ -351,9 +352,9 @@
         }
 
         async function inviaStatoAlCloud() {
-            isSaving = true; // Attiva il blocco di sicurezza
+            isSaving = true; // Attiva il blocco di sicurezza temporaneo
             try {
-                // Sostituito definitivamente POST con PUT per salvare stabilmente su npoint
+                // Sostituito in modo permanente POST con PUT per salvare in modo stabile su npoint
                 await fetch(API_URL, {
                     method: "PUT", 
                     headers: { "Content-Type": "application/json" },
@@ -366,7 +367,7 @@
             }
         }
 
-        // Primo avvio e sincronizzazione ogni 5 secondi
+        // Avvio iniziale e controllo automatico modifiche ogni 5 secondi
         caricaDatiDalCloud();
         setInterval(caricaDatiDalCloud, 5000);
     </script>
