@@ -5,28 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tabellone Viaggi Italia</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0 0 40px 0; color: #333; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0 0 90px 0; color: #333; -webkit-tap-highlight-color: transparent; }
         
-        .header-titolo { text-align: center; color: #2f4f4f; font-size: 22px; margin: 15px 0 5px 0; font-weight: bold; }
+        .header-titolo { text-align: center; color: #2f4f4f; font-size: 22px; margin: 15px 0 3px 0; font-weight: bold; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 5px; font-size: 13px; }
         
-        /* COLORI UTENTI */
-        .color-p1 { color: #3498db !important; }
-        .color-p2 { color: #e74c3c !important; }
-        .color-p3 { color: #2ecc71 !important; }
-        .color-p4 { color: #f39c12 !important; }
+        /* COLORI IDENTIFICATIVI UTENTI */
+        .color-p1 { color: #2563eb !important; }
+        .color-p2 { color: #dc2626 !important; }
+        .color-p3 { color: #16a34a !important; }
+        .color-p4 { color: #d97706 !important; }
 
-        input[id$="_p1"] { accent-color: #3498db; }
-        input[id$="_p2"] { accent-color: #e74c3c; }
-        input[id$="_p3"] { accent-color: #2ecc71; }
-        input[id$="_p4"] { accent-color: #f39c12; }
+        input[id$="_p1"] { accent-color: #2563eb; }
+        input[id$="_p2"] { accent-color: #dc2626; }
+        input[id$="_p3"] { accent-color: #16a34a; }
+        input[id$="_p4"] { accent-color: #d97706; }
 
-        /* BLOCCO FISSO IN ALTO */
+        /* INDICATORE DI SINCRONIZZAZIONE */
+        #sync-status { text-align: center; font-size: 12px; margin-bottom: 12px; font-weight: 600; height: 16px; transition: color 0.3s; }
+        .status-synced { color: #16a34a; }
+        .status-pending { color: #d97706; }
+        .status-offline { color: #dc2626; }
+
+        /* BLOCCO FISSO IN ALTO (DASHBOARD + INTESTAZIONI) */
         .top-sticky-container {
             position: sticky;
             top: 0;
             background-color: #f4f7f6;
             z-index: 1000;
-            padding: 5px 10px 0 10px;
+            padding: 5px 12px 0 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
@@ -37,7 +45,7 @@
             text-align: center; 
             margin-bottom: 8px;
         }
-        .stat-box { background: white; padding: 6px; border-radius: 8px; border: 1px solid #e0eeee; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .stat-box { background: white; padding: 6px; border-radius: 8px; border: 1px solid #e0eeee; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
         .stat-name { font-weight: bold; font-size: 12px; }
         .stat-score { font-size: 18px; font-weight: bold; margin-top: 2px; }
         
@@ -51,48 +59,89 @@
             font-weight: bold;
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
-            padding: 10px 0;
+            padding: 12px 0;
         }
-        .fake-header div:first-child { text-align: left; padding-left: 10px; }
+        .fake-header div:first-child { text-align: left; padding-left: 12px; }
 
-        /* TABELLA */
-        .table-container { padding: 0 10px 20px 10px; }
+        /* TABELLA CONTENUTI */
+        .table-container { padding: 0 12px 20px 12px; }
         table { width: 100%; border-collapse: collapse; background: white; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         
-        td { padding: 12px 0; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
-        tr:nth-child(even) { background-color: #fcfcfc; }
+        tr.riga-citta:nth-child(even) { background-color: #f9fbfb; }
+        tr.riga-citta:active { background-color: #f0f4f4; }
         
-        .col-citta { width: 40%; text-align: left; padding-left: 10px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; }
+        td { padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
         
-        .regione-header { background-color: #e0eeee !important; font-weight: bold; text-align: left; color: #2f4f4f; padding-left: 10px; font-size: 15px; height: 40px; border-top: 2px solid #ccc; }
+        /* GUIDA VISIVA COLONNE PER EVITARE ERRORI SU MOBILE */
+        td.cell-p1 { background-color: rgba(37, 99, 235, 0.02); }
+        td.cell-p2 { background-color: rgba(220, 38, 38, 0.02); }
+        td.cell-p3 { background-color: rgba(22, 163, 74, 0.02); }
+        td.cell-p4 { background-color: rgba(217, 119, 6, 0.02); }
         
-        input[type="checkbox"] { transform: scale(1.6); cursor: pointer; width: 20px; height: 20px; }
+        .col-citta { width: 40%; text-align: left; padding-left: 12px; font-weight: 500; }
+        .col-check { width: 15%; text-align: center; }
+        
+        .citta-nome-wrapper { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
+        .citta-testo { word-break: break-word; line-height: 1.2; }
+        
+        .regione-header { background-color: #e0eeee !important; font-weight: bold; text-align: left; color: #2f4f4f; padding-left: 12px; font-size: 15px; height: 42px; border-top: 2px solid #cbd5e1; }
+        
+        input[type="checkbox"] { transform: scale(1.6); cursor: pointer; width: 20px; height: 20px; margin: 0; padding: 0; vertical-align: middle; }
 
-        .actions-container { display: flex; gap: 8px; padding-right: 5px; }
-        .btn-action { background: #f4f7f6; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; padding: 6px 8px; font-size: 14px; }
+        /* PULSANTI DI AZIONE OTTIMIZZATI PER IL TOCCO */
+        .actions-container { display: flex; gap: 8px; margin-top: 4px; }
+        .btn-action { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; padding: 4px 8px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
         
-        .add-row { background-color: #fafafa !important; }
-        .add-bar-region { display: flex; gap: 8px; padding: 8px 10px; }
-        .add-bar-region input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; }
-        .add-bar-region button { background-color: #008b8b; color: white; border: none; padding: 0 18px; border-radius: 8px; font-size: 18px; font-weight: bold; }
-
-        #sync-status { text-align: center; font-size: 11px; color: #888; margin-bottom: 5px; height: 15px; font-weight: bold; }
-        
-        /* BACKUP BOTTOM */
-        .backup-zone { text-align: center; padding: 15px; margin-top: 20px; border-top: 1px dashed #ccc; }
-        .btn-backup { background: #666; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; margin: 0 5px; }
+        /* BARRA FISSA IN BASSO PER AGGIUNGERE LE CITTÀ */
+        .add-city-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -3px 12px rgba(0,0,0,0.12);
+            padding: 12px 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 1002;
+        }
+        .add-city-bar input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+            background: #f8fafc;
+        }
+        .add-city-bar input[type="text"]:focus { border-color: #008b8b; background: white; }
+        .add-city-bar button {
+            background-color: #008b8b;
+            color: white;
+            border: none;
+            padding: 0 22px;
+            border-radius: 24px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .add-city-bar button:active { background-color: #2f4f4f; }
 
         @media (max-width: 600px) { 
             .dashboard { grid-template-columns: repeat(2, 1fr); }
-            td { font-size: 14px; padding: 10px 0; }
-            .col-citta { flex-direction: column; align-items: flex-start; gap: 8px; }
+            td { font-size: 13px; padding: 12px 0; }
+            input[type="checkbox"] { transform: scale(1.7); }
         }
     </style>
 </head>
 <body>
 
-    <div class="header-titolo">✈️ Città Visitate</div>
-    <div id="sync-status">Avvio in corso...</div>
+    <div class="header-titolo">✈️ Città Visitate d'Italia</div>
+    <div class="subtitle">Aggiornamento condiviso e salvataggio in tempo reale</div>
+    <div id="sync-status">Caricamento in corso...</div>
 
     <div class="top-sticky-container">
         <div class="dashboard">
@@ -118,273 +167,339 @@
         </table>
     </div>
 
-    <div class="backup-zone">
-        <button class="btn-backup" onclick="esportaBackup()">📋 Copia Backup Dati</button>
-        <button class="btn-backup" onclick="importaBackup()">💾 Ripristina Backup</button>
+    <div class="add-city-bar">
+        <input type="text" id="nuova-citta-input" placeholder="Scrivi una città (es. Sanremo, Otranto...)">
+        <button onclick="aggiungiNuovaCitta()">+</button>
     </div>
 
     <script>
         const API_URL = "https://api.npoint.io/cb8da9e69cba4ba8e1b9"; 
         let statoGlobale = {};
-        let ultimaFirmaStruttura = "";
-        let salvaTimeout = null;
-
-        // 1. CARICAMENTO IMMEDIATO DI SICUREZZA DA LOCAL STORAGE
-        let cacheSalvata = localStorage.getItem("viaggiCachePro");
-        if (cacheSalvata) {
-            try {
-                let datiScritti = JSON.parse(cacheSalvata);
-                if (datiScritti && Object.keys(datiScritti).length > 0) {
-                    statoGlobale = datiScritti;
-                    ultimaFirmaStruttura = generaFirmaStruttura(statoGlobale);
-                }
-            } catch(e) { console.error(e); }
-        }
+        let ultimoStatoCloud = {}; // Memorizza l'ultimo stato noto del server per calcolare i delta di modifica
+        let debouncedSaveTimeout = null;
+        let isSyncing = false;
 
         const datiViaggi = {
-            "Abruzzo": ["L'Aquila", "Pescara", "Chieti", "Teramo", "Montesilvano", "Avezzano", "Vasto", "Lanciano", "Sulmona", "Roseto degli Abruzzi"],
-            "Basilicata": ["Potenza", "Matera", "Melfi", "Pisticci", "Lavello", "Rionero in Vulture", "Lauria", "Bernalda", "Venosa", "Avigliano"],
-            "Calabria": ["Catanzaro", "Reggio Calabria", "Cosenza", "Crotone", "Lamezia Terme", "Vibo Valentia", "Rossano", "Corigliano Calabro", "Rende", "Tropea"],
-            "Campania": ["Napoli", "Salerno", "Caserta", "Benevento", "Avellino", "Sorrento", "Amalfi", "Positano", "Capri", "Pompei"],
-            "Emilia-Romagna": ["Bologna", "Parma", "Modena", "Reggio Emilia", "Ravenna", "Rimini", "Ferrara", "Forlì", "Piacenza", "Riccione"],
-            "Friuli-Venezia Giulia": ["Trieste", "Udine", "Pordenone", "Gorizia", "Monfalcone", "Lignano Sabbiadoro", "Tarvisio"],
-            "Lazio": ["Roma", "Latina", "Viterbo", "Rieti", "Frosinone", "Tivoli", "Civitavecchia", "Terracina", "Sperlonga", "Gaeta"],
-            "Liguria": ["Genova", "La Spezia", "Savona", "Sanremo", "Imperia", "Portofino", "Camogli", "Vernazza", "Monterosso al Mare", "Riomaggiore"],
-            "Lombardia": ["Milano", "Brescia", "Bergamo", "Monza", "Como", "Varese", "Pavia", "Cremona", "Mantova", "Lecco", "Sirmione"],
-            "Marche": ["Ancona", "Pesaro", "Fano", "Ascoli Piceno", "Macerata", "San Benedetto del Tronto", "Urbino", "Loreto"],
-            "Molise": ["Campobasso", "Isernia", "Termoli", "Venafro", "Agnone", "Capracotta"],
-            "Piemonte": ["Torino", "Novara", "Alessandria", "Asti", "Cuneo", "Verbania", "Stresa", "Alba"],
-            "Puglia": ["Bari", "Taranto", "Foggia", "Lecce", "Brindisi", "Gallipoli", "Otranto", "Alberobello", "Polignano a Mare", "Vieste"],
-            "Sardegna": ["Cagliari", "Sassari", "Olbia", "Alghero", "Nuoro", "Oristano", "Villasimius", "Stintino"],
-            "Sicilia": ["Palermo", "Catania", "Messina", "Siracusa", "Trapani", "Agrigento", "Taormina", "Cefalù", "Noto", "San Vito Lo Capo"],
-            "Toscana": ["Firenze", "Prato", "Livorno", "Arezzo", "Pisa", "Siena", "Viareggio", "San Gimignano", "Forte dei Marmi", "Lucca"],
-            "Trentino-Alto Adige": ["Trento", "Bolzano", "Rovereto", "Merano", "Riva del Garda", "Ortisei", "Canazei", "Madonna di Campiglio"],
-            "Umbria": ["Perugia", "Terni", "Foligno", "Spoleto", "Gubbio", "Assisi", "Orvieto", "Norcia"],
-            "Valle d'Aosta": ["Aosta", "Courmayeur", "Breuil-Cervinia", "Cogne", "Saint-Vincent"],
-            "Veneto": ["Venezia", "Verona", "Padova", "Vicenza", "Treviso", "Cortina d'Ampezzo", "Jesolo", "Peschiera del Garda", "Bardolino"]
+            "Abruzzo": ["L'Aquila", "Pescara", "Chieti", "Teramo", "Montesilvano", "Avezzano", "Vasto", "Lanciano", "Sulmona", "Roseto degli Abruzzi", "Ortona", "Francavilla al Mare", "Giulianova", "San Salvo", "Spoltore", "Alba Adriatica", "Atri", "Martinsicuro", "Silvi", "Pineto", "Pescasseroli", "Roccaraso", "Scanno", "Santo Stefano di Sessanio", "Castelli"],
+            "Basilicata": ["Potenza", "Matera", "Melfi", "Pisticci", "Lavello", "Rionero in Vulture", "Lauria", "Bernalda", "Venosa", "Avigliano", "Montescaglioso", "Ferrandina", "Maratea", "Scanzano Jonico", "Policoro", "Tursi", "Lagonegro", "Senise", "Rotonda", "Viggiano", "Genzano di Lucania", "Acerenza", "Castelmezzano", "Pietrapertosa", "Aliano"],
+            "Calabria": ["Catanzaro", "Reggio Calabria", "Cosenza", "Crotone", "Lamezia Terme", "Vibo Valentia", "Rossano", "Corigliano Calabro", "Rende", "Castrovillari", "Acri", "Palmi", "Soverato", "Tropea", "Gioia Tauro", "Scalea", "Amantea", "Paola", "Locri", "Siderno", "Scilla", "Pizzo", "Diamante", "Gerace", "Stilo"],
+            "Campania": ["Napoli", "Salerno", "Caserta", "Benevento", "Avellino", "Giugliano in Campania", "Torre del Greco", "Pozzuoli", "Aversa", "Battipaglia", "Cava de' Tirreni", "Scafati", "Casoria", "Castellammare di Stabia", "Acerra", "Ercolano", "Marano di Napoli", "Portici", "Afragola", "Sorrento", "Amalfi", "Positano", "Capri", "Ischia", "Pompei"],
+            "Emilia-Romagna": ["Bologna", "Parma", "Modena", "Reggio Emilia", "Ravenna", "Rimini", "Ferrara", "Forlì", "Piacenza", "Cesena", "Imola", "Faenza", "Carpi", "Sassuolo", "Riccione", "Cattolica", "Cesenatico", "Lugo", "Fidenza", "Cento", "Comacchio", "Bellaria-Igea Marina", "Maranello", "Bobbio", "Brisighella"],
+            "Friuli-Venezia Giulia": ["Trieste", "Udine", "Pordenone", "Gorizia", "Monfalcone", "Sacile", "Cordenons", "Codroipo", "Porcia", "Cervignano del Friuli", "Latisana", "Fontanafredda", "Spilimbergo", "Fiume Veneto", "Grado", "Lignano Sabbiadoro", "San Daniele del Friuli", "Palmanova", "Aquileia", "Tarvisio", "Cividale del Friuli", "Gemona del Friuli", "Tolmezzo", "Maniago", "Venzone"],
+            "Lazio": ["Roma", "Latina", "Viterbo", "Rieti", "Frosinone", "Guidonia Montecelio", "Fiumicino", "Aprilia", "Pomezia", "Anzio", "Tivoli", "Velletri", "Civitavecchia", "Nettuno", "Terracina", "Formia", "Fondia", "Marino", "Frascati", "Sabaudia", "Sperlonga", "Gaeta", "Tuscania", "Tarquinia", "Subiaco"],
+            "Liguria": ["Genova", "La Spezia", "Savona", "Sanremo", "Imperia", "Rapallo", "Chiavari", "Ventimiglia", "Albenga", "Sarzana", "Sestri Levante", "Taggia", "Varazze", "Lavagna", "Alassio", "Ceriale", "Loano", "Finale Ligure", "Portofino", "Camogli", "Lerici", "Vernazza", "Monterosso al Mare", "Riomaggiore", "Portovenere"],
+            "Lombardia": ["Milano", "Brescia", "Bergamo", "Monza", "Como", "Varese", "Pavia", "Cremona", "Mantova", "Lecco", "Lodi", "Sondrio", "Busto Arsizio", "Sesto San Giovanni", "Cinicello Balsamo", "Vigevano", "Legnano", "Gallarate", "Rho", "Saronno", "Sirmione", "Bellagio", "Vigevano", "Crema", "Livigno"],
+            "Marche": ["Ancona", "Pesaro", "Fano", "Ascoli Piceno", "Macerata", "Civitanova Marche", "Senigallia", "Jesi", "San Benedetto del Tronto", "Fabriano", "Porto Sant'Elpidio", "Recanati", "Tolentino", "Fermo", "Osimo", "Falconara Marittima", "Urbino", "Gradara", "Loreto", "Corinaldo", "Camerino", "San Leo", "Grottammare", "Offida", "Mondavio"],
+            "Molise": ["Campobasso", "Isernia", "Termoli", "Venafro", "Bojano", "Campomarino", "Larino", "Montenero di Bisaccia", "Agnone", "Riccia", "Guglionesi", "Trivento", "Frosolone", "Scapoli", "Sepino", "Fornelli", "Castel San Vincenzo", "Bagnoli del Trigno", "Pesco Pennataro", "Capracotta", "Roccamandolfi", "Ferrazzano", "Petrella Tifernina", "Gildone", "Guardialfiera"],
+            "Piemonte": ["Torino", "Novara", "Alessandria", "Asti", "Cuneo", "Moncalieri", "Collegno", "Rivoli", "Vercelli", "Biella", "Alba", "Bra", "Verbania", "Nichelino", "Settimo Torinese", "Venaria Reale", "Chieri", "Casale Monferrato", "Pinerolo", "Ivrea", "Domodossola", "Arona", "Stresa", "Susa", "Saluzzo"],
+            "Puglia": ["Bari", "Taranto", "Foggia", "Lecce", "Andria", "Barletta", "Brindisi", "Altamura", "Molfetta", "Manfredonia", "Cerignola", "Bitonto", "San Severo", "Bisceglie", "Trani", "Gallipoli", "Otranto", "Alberobello", "Polignano a Mare", "Monopoli", "Ostuni", "Vieste", "San Giovanni Rotondo", "Peschici", "Santa Maria di Leuca"],
+            "Sardegna": ["Cagliari", "Sassari", "Quartu Sant'Elena", "Olbia", "Alghero", "Nuoro", "Oristano", "Carbonia", "Selargius", "Iglesias", "Assemini", "Porto Torres", "Sestu", "Capoterra", "Monserrato", "Siniscola", "Tortolì", "Arzachena", "Bosa", "Castelsardo", "Carloforte", "Villasimius", "Pula", "Orgosolo", "Stintino"],
+            "Sicilia": ["Palermo", "Catania", "Messina", "Siracusa", "Marsala", "Gela", "Ragusa", "Trapani", "Caltanissetta", "Agrigento", "Bagheria", "Acireale", "Modica", "Mazara del Vallo", "Misterbianco", "Paternò", "Castelvetrano", "Augusta", "Taormina", "Cefalù", "Noto", "San Vito Lo Capo", "Erice", "Monreale", "Favignana"],
+            "Toscana": ["Firenze", "Prato", "Livorno", "Arezzo", "Pistoia", "Pisa", "Lucca", "Grosseto", "Massa", "Siena", "Carrara", "Viareggio", "Pistoia", "Scandicci", "Sesto Fiorentino", "Empoli", "Capannori", "Cascina", "Piombino", "San Gimignano", "Volterra", "Montepulciano", "Cortona", "Forte dei Marmi", "Portoferraio"],
+            "Trentino-Alto Adige": ["Trento", "Bolzano", "Rovereto", "Merano", "Bressanone", "Pergine Valsugana", "Laives", "Arco", "Riva del Garda", "Brunico", "Appiano sulla Strada del Vino", "Lana", "Caldaro sulla Strada del Vino", "Renon", "Vipiteno", "Ortisei", "Cavalese", "Canazei", "Pinzolo", "Madonna di Campiglio", "Predazzo", "Mezzolombardo", "Borgo Valsugana", "Cles", "Levico Terme"],
+            "Umbria": ["Perugia", "Terni", "Foligno", "Città di Castello", "Spoleto", "Gubbio", "Assisi", "Todi", "Orvieto", "Narni", "Bastia Umbra", "Marsciano", "Corciano", "Umbertide", "Castiglione del Lago", "Gualdo Tadino", "Amelia", "Spello", "Deruta", "Norcia", "Cascia", "Monteleone di Spoleto", "Panicale", "Bevagna", "Trevi"],
+            "Valle d'Aosta": ["Aosta", "Saint-Vincent", "Châtillon", "Sarre", "Pont-Saint-Martin", "Quart", "Saint-Christophe", "Gressan", "Courmayeur", "Donnas", "Brusson", "Gressoney-Saint-Jean", "Cogne", "Breuil-Cervinia", "Valtournenche", "Morgex", "La Salle", "Nus", "Fenis", "Verres", "Pre-Saint-Didier", "Arvier", "Bard", "Saint-Pierre", "Etroubles"],
+            "Veneto": ["Venezia", "Verona", "Padova", "Vicenza", "Treviso", "Rovigo", "Chioggia", "Bassano del Grappa", "San Donà di Piave", "Schio", "Mire", "Conegliano", "Castelfranco Veneto", "Villafranca di Verona", "Belluno", "Feltre", "Cortina d'Ampezzo", "Jesolo", "Caorle", "Peschiera del Garda", "Lazise", "Bardolino", "Asolo", "Marostica", "Arqua Petrarca"]
         };
 
-        function generaSafeId(stringa) {
-            return stringa.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
-        }
-
-        function generaFirmaStruttura(dati) {
-            let firma = "";
-            for(let key in dati) {
-                if(key.startsWith('extra_')) firma += key + ":" + JSON.stringify(dati[key]) + "|";
+        // 1. CARICAMENTO IMMEDIATO DELLA CACHE INTERNA DEL TELEFONO
+        const cacheSalvata = localStorage.getItem("viaggi_italia_cache_v2");
+        if (cacheSalvata) {
+            try {
+                statoGlobale = JSON.parse(cacheSalvata);
+                ultimoStatoCloud = JSON.parse(cacheSalvata);
+            } catch(e) {
+                statoGlobale = {};
+                ultimoStatoCloud = {};
             }
-            return firma;
         }
 
-        function costruisciTabella() {
+        function generaSafeId(citta) {
+            return citta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
+        }
+
+        function updateSyncStatus(testo, tipo) {
+            const el = document.getElementById('sync-status');
+            el.innerText = testo;
+            el.className = '';
+            if (tipo === 'synced') el.classList.add('status-synced');
+            else if (tipo === 'offline') el.classList.add('status-offline');
+            else el.classList.add('status-pending');
+        }
+
+        // COSTRUZIONE COMPLETA E REATTIVA DELLA TABELLA
+        function renderTable() {
             const tbody = document.getElementById('table-body');
-            tbody.innerHTML = ""; 
+            tbody.innerHTML = "";
 
-            for (const [regione, cittaBase] of Object.entries(datiViaggi)) {
-                let rId = generaSafeId(regione);
-                tbody.insertAdjacentHTML('beforeend', `<tr id="hdr_${rId}"><td colspan="5" class="regione-header">${regione}</td></tr>`);
-                
-                let cittaExtra = statoGlobale[`extra_${rId}`] || [];
-                cittaBase.sort((a, b) => a.localeCompare(b)).forEach(c => appendiRigaCitta(tbody, c, rId, false));
-                cittaExtra.forEach(c => appendiRigaCitta(tbody, c, rId, true));
+            let extraCities = statoGlobale["_listaCittaExtra"] || [];
+            let cittaPerRegione = {};
 
-                tbody.insertAdjacentHTML('beforeend', `
-                    <tr class="add-row">
-                        <td colspan="5">
-                            <div class="add-bar-region">
-                                <input type="text" id="input_${rId}" placeholder="Aggiungi in ${regione}...">
-                                <button onclick="aggiungiCitta('${rId}', '${regione}')">+</button>
-                            </div>
-                        </td>
-                    </tr>
-                `);
+            for (let r in datiViaggi) {
+                cittaPerRegione[r] = [...datiViaggi[r]];
             }
-            aggiornaSpunteEPunteggi(); 
-        }
+            cittaPerRegione["📌 Altre Località"] = [];
 
-        function appendiRigaCitta(tbody, citta, rId, isExtra) {
-            let safeId = generaSafeId(citta);
-            let tastiAzione = isExtra ? `
-                <div class="actions-container">
-                    <button class="btn-action" onclick="modificaCitta('${rId}', '${citta}')">✏️</button>
-                    <button class="btn-action" onclick="eliminaCitta('${rId}', '${citta}')">🗑️</button>
-                </div>
-            ` : '';
-
-            tbody.insertAdjacentHTML('beforeend', `
-                <tr id="row_${safeId}">
-                    <td class="col-citta"><span>${citta}</span>${tastiAzione}</td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p1" onclick="salvaCheck('${safeId}', 'p1', this.checked)"></td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p2" onclick="salvaCheck('${safeId}', 'p2', this.checked)"></td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p3" onclick="salvaCheck('${safeId}', 'p3', this.checked)"></td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p4" onclick="salvaCheck('${safeId}', 'p4', this.checked)"></td>
-                </tr>
-            `);
-        }
-
-        function aggiornaSpunteEPunteggi() {
-            let punteggi = { p1: 0, p2: 0, p3: 0, p4: 0 };
-            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                let [cittaId, persona] = checkbox.id.split('_');
-                let chiave = `${cittaId}_${persona}`;
-                if (statoGlobale[chiave] === true) {
-                    checkbox.checked = true;
-                    punteggi[persona]++;
+            // Smista le città extra nelle rispettive regioni di appartenenza o in altre località
+            extraCities.forEach(citta => {
+                let regioneTrovata = null;
+                let nomeCittaNormalizzato = citta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                
+                for (const [regione, lista] of Object.entries(datiViaggi)) {
+                    let contiene = lista.some(c => c.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === nomeCittaNormalizzato);
+                    if (contiene) { regioneTrovata = regione; break; }
+                }
+                
+                if (regioneTrovata) {
+                    if (!cittaPerRegione[regioneTrovata].includes(citta)) cittaPerRegione[regioneTrovata].push(citta);
                 } else {
-                    checkbox.checked = false;
+                    if (!cittaPerRegione["📌 Altre Località"].includes(citta)) cittaPerRegione["📌 Altre Località"].push(citta);
                 }
             });
+
+            // Generazione HTML ordinata alfabeticamente per singola regione
+            for (const [regione, cittaList] of Object.entries(cittaPerRegione)) {
+                if (regione === "📌 Altre Località" && cittaList.length === 0) continue;
+
+                let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
+                tbody.insertAdjacentHTML('beforeend', `<tr id="regione_${rId}"><td colspan="5" class="regione-header">${regione}</td></tr>`);
+
+                cittaList.sort((a, b) => a.localeCompare(b));
+
+                cittaList.forEach(citta => {
+                    let safeId = generaSafeId(citta);
+                    let isExtra = extraCities.includes(citta) || regione === "📌 Altre Località";
+                    
+                    let tastiAzione = isExtra ? `
+                        <div class="actions-container">
+                            <button class="btn-action" onclick="modificaCitta('${citta}')" title="Modifica">✏️</button>
+                            <button class="btn-action" onclick="eliminaCitta('${citta}')" title="Elimina">🗑️</button>
+                        </div>
+                    ` : '';
+
+                    let p1Check = statoGlobale[`${safeId}_p1`] === true ? 'checked' : '';
+                    let p2Check = statoGlobale[`${safeId}_p2`] === true ? 'checked' : '';
+                    let p3Check = statoGlobale[`${safeId}_p3`] === true ? 'checked' : '';
+                    let p4Check = statoGlobale[`${safeId}_p4`] === true ? 'checked' : '';
+
+                    let row = `
+                        <tr id="row_${safeId}" class="riga-citta ${isExtra ? 'riga-extra' : ''}">
+                            <td class="col-citta" id="text_${safeId}">
+                                <div class="citta-nome-wrapper">
+                                    <span class="citta-testo">${citta}</span>
+                                    ${tastiAzione}
+                                </div>
+                            </td>
+                            <td class="col-check cell-p1"><input type="checkbox" id="${safeId}_p1" ${p1Check} onclick="salvaCambio('${safeId}', 'p1', this.checked)"></td>
+                            <td class="col-check cell-p2"><input type="checkbox" id="${safeId}_p2" ${p2Check} onclick="salvaCambio('${safeId}', 'p2', this.checked)"></td>
+                            <td class="col-check cell-p3"><input type="checkbox" id="${safeId}_p3" ${p3Check} onclick="salvaCambio('${safeId}', 'p3', this.checked)"></td>
+                            <td class="col-check cell-p4"><input type="checkbox" id="${safeId}_p4" ${p4Check} onclick="salvaCambio('${safeId}', 'p4', this.checked)"></td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+            aggiornaPunteggiASchermo();
+        }
+
+        function aggiornaPunteggiASchermo() {
+            let punteggi = { p1: 0, p2: 0, p3: 0, p4: 0 };
+            for (let k in statoGlobale) {
+                if (statoGlobale[k] === true) {
+                    if (k.endsWith('_p1')) punteggi.p1++;
+                    if (k.endsWith('_p2')) punteggi.p2++;
+                    if (k.endsWith('_p3')) punteggi.p3++;
+                    if (k.endsWith('_p4')) punteggi.p4++;
+                }
+            }
             document.getElementById('score-p1').innerText = punteggi.p1;
             document.getElementById('score-p2').innerText = punteggi.p2;
             document.getElementById('score-p3').innerText = punteggi.p3;
             document.getElementById('score-p4').innerText = punteggi.p4;
         }
 
-        // SALVATAGGIO OTTIMIZZATO (Debounced e anti-cancellazione)
-        function pianificaSalvataggioCloud() {
-            document.getElementById('sync-status').innerText = "Modifica locale salvata... ⏳";
-            if (salvaTimeout) clearTimeout(salvaTimeout);
-            
-            salvaTimeout = setTimeout(async () => {
-                document.getElementById('sync-status').innerText = "Salvataggio nel cloud...";
-                try {
-                    // Scarica l'ultimo per non sovrascrivere gli altri
-                    let res = await fetch(API_URL);
-                    let datiCloud = await res.json();
-                    
-                    // Se il cloud risponde vuoto o rotto, non unire nulla, usa il locale
-                    if (datiCloud && typeof datiCloud === 'object' && Object.keys(datiCloud).length > 0) {
-                        statoGlobale = Object.assign({}, datiCloud, statoGlobale);
+        // AGGIORNA VELOCEMENTE LE SPUNTE SENZA RIGENERARE TUTTO L'HTML
+        function aggiornaSpunteDaStato() {
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                let [cittaId, persona] = checkbox.id.split('_');
+                let chiave = `${cittaId}_${persona}`;
+                checkbox.checked = (statoGlobale[chiave] === true);
+            });
+            aggiornaPunteggiASchermo();
+        }
+
+        // LOGICA DI UNIONE (DELTA-MERGE) ANTI-CONFLITTO E AGGIORNAMENTO CLOUD
+        async function sincronizzaConCloud() {
+            if (isSyncing) return;
+            isSyncing = true;
+            updateSyncStatus("Sincronizzazione in corso...", "pending");
+
+            try {
+                // 1. Scarica i dati freschi dal cloud
+                let risposta = await fetch(API_URL);
+                if (!risposta.ok) throw new Error();
+                let freshCloud = await risposta.json();
+                if (!freshCloud || typeof freshCloud !== 'object') freshCloud = {};
+
+                // 2. Calcola cosa è cambiato localmente rispetto all'ultimo cloud noto
+                let delta = {};
+                let allKeys = new Set([...Object.keys(statoGlobale), ...Object.keys(ultimoStatoCloud)]);
+                for (let k of allKeys) {
+                    if (k !== "_listaCittaExtra" && statoGlobale[k] !== ultimoStatoCloud[k]) {
+                        delta[k] = statoGlobale[k];
                     }
-
-                    // Invia dati puliti
-                    await fetch(API_URL, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(statoGlobale)
-                    });
-                    
-                    localStorage.setItem("viaggiCachePro", JSON.stringify(statoGlobale));
-                    document.getElementById('sync-status').innerText = "Sincronizzato ✔️";
-                } catch(e) {
-                    document.getElementById('sync-status').innerText = "⚠️ Errore rete. Salvato solo sul telefono!";
                 }
-            }, 1200); // Aspetta un secondo prima di inviare
+
+                let localExtra = statoGlobale["_listaCittaExtra"] || [];
+                let oldExtra = ultimoStatoCloud["_listaCittaExtra"] || [];
+                let addedCities = localExtra.filter(c => !oldExtra.includes(c));
+                let removedCities = oldExtra.filter(c => !localExtra.includes(c));
+
+                // 3. Applica solo i tuoi cambiamenti sul cloud fresco (preserva il lavoro degli altri)
+                for (let k in delta) {
+                    if (delta[k] === undefined || delta[k] === false) delete freshCloud[k];
+                    else freshCloud[k] = delta[k];
+                }
+
+                if (!freshCloud["_listaCittaExtra"]) freshCloud["_listaCittaExtra"] = [];
+                addedCities.forEach(c => { if (!freshCloud["_listaCittaExtra"].includes(c)) freshCloud["_listaCittaExtra"].push(c); });
+                freshCloud["_listaCittaExtra"] = freshCloud["_listaCittaExtra"].filter(c => !removedCities.includes(c));
+
+                // 4. Salva il file unito nel cloud
+                let invio = await fetch(API_URL, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(freshCloud)
+                });
+                if (!invio.ok) throw new Error();
+
+                // 5. Allinea gli stati locali
+                ultimoStatoCloud = JSON.parse(JSON.stringify(freshCloud));
+                statoGlobale = JSON.parse(JSON.stringify(freshCloud));
+                localStorage.setItem("viaggi_italia_cache_v2", JSON.stringify(statoGlobale));
+
+                updateSyncStatus("Sincronizzato ✔️", "synced");
+            } catch (e) {
+                console.error("Errore Sync:", e);
+                updateSyncStatus("⚠️ Connessione debole (Dati protetti sul telefono)", "offline");
+            } finally {
+                isSyncing = false;
+            }
         }
 
-        function salvaCheck(cittaId, persona, checked) {
+        function pianificaSincronizzazione() {
+            if (debouncedSaveTimeout) clearTimeout(debouncedSaveTimeout);
+            updateSyncStatus("Modifiche salvate in locale... ⏳", "pending");
+            debouncedSaveTimeout = setTimeout(() => {
+                debouncedSaveTimeout = null;
+                sincronizzaConCloud();
+            }, 1000); // Aspetta un secondo dopo l'ultimo click prima di inviare
+        }
+
+        // AZIONI UTENTE CONTROLLATE
+        function salvaCambio(cittaId, persona, checked) {
             statoGlobale[`${cittaId}_${persona}`] = checked;
-            localStorage.setItem("viaggiCachePro", JSON.stringify(statoGlobale)); // Salva SUBITO nel telefono
-            aggiornaSpunteEPunteggi();
-            pianificaSalvataggioCloud();
+            localStorage.setItem("viaggi_italia_cache_v2", JSON.stringify(statoGlobale));
+            aggiornaPunteggiASchermo();
+            pianificaSincronizzazione();
         }
 
-        function aggiungiCitta(rId, nomeRegione) {
-            let inputField = document.getElementById(`input_${rId}`);
+        function aggiungiNuovaCitta() {
+            let inputField = document.getElementById('nuova-citta-input');
             let nomeCitta = inputField.value.trim();
             if (nomeCitta === "") return;
 
-            if (!statoGlobale[`extra_${rId}`]) statoGlobale[`extra_${rId}`] = [];
-            if (!statoGlobale[`extra_${rId}`].includes(nomeCitta)) {
-                statoGlobale[`extra_${rId}`].push(nomeCitta);
+            if (!statoGlobale["_listaCittaExtra"]) statoGlobale["_listaCittaExtra"] = [];
+            if (!statoGlobale["_listaCittaExtra"].includes(nomeCitta)) {
+                statoGlobale["_listaCittaExtra"].push(nomeCitta);
             }
-            
-            localStorage.setItem("viaggiCachePro", JSON.stringify(statoGlobale));
-            costruisciTabella();
-            pianificaSalvataggioCloud();
-            inputField.value = ""; 
+
+            localStorage.setItem("viaggi_italia_cache_v2", JSON.stringify(statoGlobale));
+            renderTable();
+            pianificaSincronizzazione();
+            inputField.value = "";
+            window.scrollTo({ top: document.getElementById(`row_${generaSafeId(nomeCitta)}`).offsetTop - 150, behavior: 'smooth' });
         }
 
-        function eliminaCitta(rId, nomeCitta) {
-            if (!confirm(`Vuoi davvero eliminare "${nomeCitta}"?`)) return;
+        function eliminaCitta(nomeCitta) {
+            if (!confirm(`Vuoi davvero eliminare "${nomeCitta}" dalla lista?`)) return;
 
-            if (statoGlobale[`extra_${rId}`]) {
-                statoGlobale[`extra_${rId}`] = statoGlobale[`extra_${rId}`].filter(c => c !== nomeCitta);
+            if (statoGlobale["_listaCittaExtra"]) {
+                statoGlobale["_listaCittaExtra"] = statoGlobale["_listaCittaExtra"].filter(c => c !== nomeCitta);
             }
+
             let safeId = generaSafeId(nomeCitta);
             ['p1', 'p2', 'p3', 'p4'].forEach(p => delete statoGlobale[`${safeId}_${p}`]);
-            
-            localStorage.setItem("viaggiCachePro", JSON.stringify(statoGlobale));
-            costruisciTabella();
-            pianificaSalvataggioCloud();
+
+            localStorage.setItem("viaggi_italia_cache_v2", JSON.stringify(statoGlobale));
+            renderTable();
+            pianificaSincronizzazione();
         }
 
-        function modificaCitta(rId, vecchioNome) {
+        function modificaCitta(vecchioNome) {
             let nuovoNome = prompt(`Modifica il nome della città:`, vecchioNome);
-            if (!nuovoNome || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
+            if (nuovoNome === null || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
             nuovoNome = nuovoNome.trim();
 
-            if (statoGlobale[`extra_${rId}`]) {
-                let index = statoGlobale[`extra_${rId}`].indexOf(vecchioNome);
-                if (index !== -1) statoGlobale[`extra_${rId}`][index] = nuovoNome;
+            if (statoGlobale["_listaCittaExtra"]) {
+                let index = statoGlobale["_listaCittaExtra"].indexOf(vecchioNome);
+                if (index !== -1) statoGlobale["_listaCittaExtra"][index] = nuovoNome;
             }
+
             let vecchioSafeId = generaSafeId(vecchioNome);
             let nuovoSafeId = generaSafeId(nuovoNome);
+
             ['p1', 'p2', 'p3', 'p4'].forEach(p => {
                 if (statoGlobale[`${vecchioSafeId}_${p}`] !== undefined) {
                     statoGlobale[`${nuovoSafeId}_${p}`] = statoGlobale[`${vecchioSafeId}_${p}`];
                     delete statoGlobale[`${vecchioSafeId}_${p}`];
                 }
             });
-            
-            localStorage.setItem("viaggiCachePro", JSON.stringify(statoGlobale));
-            costruisciTabella();
-            pianificaSalvataggioCloud();
+
+            localStorage.setItem("viaggi_italia_cache_v2", JSON.stringify(statoGlobale));
+            renderTable();
+            pianificaSincronizzazione();
         }
 
-        // SCARICAMENTO PASSIVO SICURO
-        async function caricaDatiDalCloud() {
-            if (salvaTimeout) return; // Se sto scrivendo io, non scaricare nulla
+        // SCARICAMENTO PASSIVO SILENZIOSO (CONTROLLO AGGIORNAMENTI ALTRUI COI DELTA)
+        async function scaricaAggiornamentiPassivi() {
+            if (isSyncing || debouncedSaveTimeout) return; 
+            isSyncing = true;
             try {
-                let res = await fetch(API_URL);
-                let nuoviDati = await res.json();
-                
-                // BLOCCA IL RESET: Se il server risponde vuoto o rotto, ignoralo per non perdere i dati locali
-                if (!nuoviDati || typeof nuoviDati !== 'object' || Object.keys(nuoviDati).length === 0) {
-                    return; 
+                let risposta = await fetch(API_URL);
+                if (risposta.ok) {
+                    let freshCloud = await risposta.json();
+                    if (freshCloud && typeof freshCloud === 'object' && Object.keys(freshCloud).length > 0) {
+                        
+                        // Controlla se ci sono reali differenze strutturali o spunte rispetto a ciò che conosciamo
+                        if (JSON.stringify(freshCloud) !== JSON.stringify(ultimoStatoCloud)) {
+                            let extraLocali = JSON.stringify(statoGlobale["_listaCittaExtra"] || []);
+                            let extraCloud = JSON.stringify(freshCloud["_listaCittaExtra"] || []);
+                            
+                            ultimoStatoCloud = JSON.parse(JSON.stringify(freshCloud));
+                            statoGlobale = freshCloud;
+                            localStorage.setItem("viaggi_italia_cache_v2", JSON.stringify(statoGlobale));
+
+                            // Se la struttura delle città aggiunte è cambiata rigenera la tabella, altrimenti aggiorna solo i check velocemente
+                            if (extraLocali !== extraCloud) renderTable();
+                            else aggiornaSpunteDaStato();
+                        }
+                        
+                        let adesso = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        updateSyncStatus(`Aggiornato alle ${adesso} ✔️`, "synced");
+                    }
                 }
-                
-                statoGlobale = nuoviDati;
-                localStorage.setItem("viaggiCachePro", JSON.stringify(statoGlobale)); 
-                
-                let nuovaFirma = generaFirmaStruttura(statoGlobale);
-                if (nuovaFirma !== ultimaFirmaStruttura) {
-                    ultimaFirmaStruttura = nuovaFirma;
-                    costruisciTabella();
-                } else {
-                    aggiornaSpunteEPunteggi();
-                }
-                document.getElementById('sync-status').innerText = "Aggiornato: " + new Date().toLocaleTimeString();
-            } catch (e) {
-                document.getElementById('sync-status').innerText = "Connessione debole... (Dati protetti)";
+            } catch(e) {
+                updateSyncStatus("⚠️ Modalità Offline", "offline");
+            } finally {
+                isSyncing = false;
             }
         }
 
-        // STRUMENTI DI BACKUP
-        function esportaBackup() {
-            navigator.clipboard.writeText(JSON.stringify(statoGlobale));
-            alert("Codice di backup copiato negli appunti del telefono! Incollalo e salvalo su WhatsApp o nelle note.");
-        }
-
-        function importaBackup() {
-            let stringa = prompt("Incolla qui il codice di backup precedentemente copiato:");
-            if(!stringa) return;
-            try {
-                let dati = JSON.parse(stringa);
-                if(dati && typeof dati === 'object') {
-                    statoGlobale = dati;
-                    localStorage.setItem("viaggiCachePro", JSON.stringify(statoGlobale));
-                    costruisciTabella();
-                    pianificaSalvataggioCloud();
-                    alert("Dati ripristinati correttamente!");
-                }
-            } catch(e) { alert("Codice non valido."); }
-        }
-
-        // Avvio
-        costruisciTabella(); 
-        caricaDatiDalCloud(); 
-        setInterval(caricaDatiDalCloud, 7000); // Sincronizzazione automatica ogni 7 secondi
+        // AVVIO
+        renderTable(); // Carica subito i dati di localStorage all'istante 0
+        sincronizzaConCloud(); // Cerca immediatamente la prima connessione cloud
+        setInterval(scaricaAggiornamentiPassivi, 6000); // Controlla e unisce in background le modifiche degli altri ogni 6 secondi
     </script>
 </body>
 </html>
