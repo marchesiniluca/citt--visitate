@@ -44,5 +44,6 @@
   "_mappaCittaExtraRegione": {
     "Arzano": "Campania"
   },
-  "arzano_p1": true
+  "arzano_p1": true,
+  "grado_p1": true
 }
