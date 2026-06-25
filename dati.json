@@ -44,7 +44,8 @@
   "_mappaCittaExtraRegione": {
     "Arzano": "Campania",
     "Ostia": "Lazio",
-    "San Teodoro": "Sardegna"
+    "San Teodoro": "Sardegna",
+    "Budoni": "Sardegna"
   },
   "arzano_p1": true,
   "grado_p1": true,
