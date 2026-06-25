@@ -5,21 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tabellone Viaggi Italia</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0 0 70px 0; color: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 15px; color: #333; }
         
-        .header-titolo { text-align: center; color: #2f4f4f; font-size: 22px; margin: 15px 0 5px 0; font-weight: bold; }
-        .subtitle { text-align: center; color: #666; margin-bottom: 5px; font-size: 13px; }
+        .header-container { position: relative; text-align: center; margin: 5px 0 15px 0; }
+        .header-titolo { color: #2f4f4f; font-size: 22px; font-weight: bold; margin: 0; }
+        .subtitle { color: #666; font-size: 13px; margin: 3px 0 0 0; }
         
-        /* Indicatore di stato sincronizzazione in tempo reale */
-        #sync-indicator { text-align: center; font-size: 12px; margin-bottom: 12px; font-weight: bold; transition: color 0.3s; }
-
-        /* BLOCCO FISSO IN ALTO (Dashboard + Nomi Colonne) */
+        #status-indicator {
+            position: absolute;
+            top: 0;
+            right: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
         .top-sticky-container {
             position: sticky;
             top: 0;
             background-color: #f4f7f6;
             z-index: 1000;
-            padding: 10px 15px 0 15px;
+            padding-bottom: 5px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
@@ -48,8 +57,7 @@
         }
         .fake-header div:first-child { text-align: left; padding-left: 15px; }
 
-        /* CONTENUTO SCORREVOLE */
-        .table-container { padding: 0 15px 20px 15px; }
+        .table-container { margin-top: 5px; }
         table { width: 100%; border-collapse: collapse; background: white; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         
         td { padding: 12px 0; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
@@ -63,67 +71,31 @@
         
         input[type="checkbox"] { transform: scale(1.4); cursor: pointer; }
 
-        /* PULSANTI DI MODIFICA/ELIMINAZIONE */
-        .actions-container {
-            display: block;
-            font-size: 11px;
-            margin-top: 4px;
-        }
-        .btn-action {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0 4px;
-            font-size: 12px;
-            opacity: 0.7;
-        }
+        .actions-container { display: inline-block; font-size: 11px; margin-left: 8px; }
+        .btn-action { background: none; border: none; cursor: pointer; padding: 0 2px; font-size: 12px; opacity: 0.6; }
         .btn-action:hover { opacity: 1; }
         
-        /* BARRA AGGIUNGICI CITTÀ FISSA IN BASSO */
-        .add-city-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
-            padding: 12px 15px;
-            display: flex;
-            gap: 10px;
-            z-index: 1002;
-        }
-        .add-city-bar input[type="text"] {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid #ccc;
-            border-radius: 20px;
-            font-size: 14px;
-            outline: none;
-        }
-        .add-city-bar button {
-            background-color: #008b8b;
-            color: white;
-            border: none;
-            padding: 0 20px;
-            border-radius: 20px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .add-city-bar button:active { background-color: #2f4f4f; }
+        .inline-add-row td { background-color: #fdfdfd; padding: 8px 15px; text-align: left; border-bottom: 3px solid #cbdad4; }
+        .inline-add-container { display: flex; gap: 8px; max-width: 350px; }
+        .inline-add-container input { flex: 1; padding: 6px 12px; border: 1px solid #ccc; border-radius: 15px; font-size: 12px; outline: none; }
+        .inline-add-container button { background-color: #008b8b; color: white; border: none; padding: 0 15px; border-radius: 15px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .inline-add-container button:active { background-color: #2f4f4f; }
 
         @media (max-width: 600px) { 
             .dashboard { grid-template-columns: repeat(2, 1fr); }
             .fake-header { font-size: 12px; padding: 10px 0; }
             td { font-size: 13px; padding: 10px 0; }
+            #status-indicator { position: static; display: inline-block; margin-top: 5px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="header-titolo">✈️ Città Visitate d'Italia</div>
-    <div class="subtitle">Aggiornamento condiviso e salvataggio in tempo reale</div>
-    <div id="sync-indicator">Connessione in corso...</div>
+    <div class="header-container">
+        <div class="header-titolo">✈️ Città Visitate d'Italia</div>
+        <div class="subtitle">Sincronizzazione Cloud Condivisa</div>
+        <div id="status-indicator">⏳ Connessione...</div>
+    </div>
 
     <div class="top-sticky-container">
         <div class="dashboard">
@@ -145,21 +117,14 @@
     <div class="table-container">
         <table>
             <tbody id="table-body">
-                <tr id="regione_altre_localita" style="display:none;"><td colspan="5" class="regione-header">📌 Altre Località</td></tr>
-            </tbody>
+                </tbody>
         </table>
-    </div>
-
-    <div class="add-city-bar">
-        <input type="text" id="nuova-citta-input" placeholder="Scrivi una città (es. Sanremo, Otranto...)">
-        <button onclick="aggiungiNuovaCitta()">+</button>
     </div>
 
     <script>
         const API_URL = "https://api.npoint.io/cb8da9e69cba4ba8e1b9"; 
         let statoGlobale = {};
-        let ultimoStatoCloud = {}; // Copia specchio per calcolare le modifiche locali ed evitare sovrascritture cieche
-        let isSaving = false; 
+        let isSaving = false;
 
         const datiViaggi = {
             "Abruzzo": ["L'Aquila", "Pescara", "Chieti", "Teramo", "Montesilvano", "Avezzano", "Vasto", "Lanciano", "Sulmona", "Roseto degli Abruzzi", "Ortona", "Francavilla al Mare", "Giulianova", "San Salvo", "Spoltore", "Alba Adriatica", "Atri", "Martinsicuro", "Silvi", "Pineto", "Pescasseroli", "Roccaraso", "Scanno", "Santo Stefano di Sessanio", "Castelli"],
@@ -185,108 +150,102 @@
         };
 
         const tbody = document.getElementById('table-body');
+        const indicator = document.getElementById('status-indicator');
 
-        // Generazione iniziale ordinata delle sezioni fisse (A-Z)
-        for (const [regione, cittaList] of Object.entries(datiViaggi)) {
-            let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
-            tbody.insertAdjacentHTML('beforeend', `<tr id="regione_${rId}"><td colspan="5" class="regione-header">${regione}</td></tr>`);
-            // Ordinamento decrescente prima dell'afterend per posizionarle alfabeticamente crescenti sullo schermo
-            cittaList.sort((a, b) => b.localeCompare(a)).forEach(citta => buildRowHTML(citta, `regione_${rId}`, false));
+        function normalizzaTesto(t) { return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); }
+        function generaSafeId(citta) { return normalizzaTesto(citta).replace(/[^a-z0-9]/g, "_"); }
+        function ottieniRegioneId(nomeRegione) { return nomeRegione.toLowerCase().replace(/[^a-z0-9]/g, "_"); }
+
+        if(localStorage.getItem('tabellone_viaggi')) {
+            try { statoGlobale = JSON.parse(localStorage.getItem('tabellone_viaggi')); } catch(e){}
         }
 
-        function trovaRegioneDellaCitta(nomeCitta) {
-            let nomeCittaNormalizzato = nomeCitta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        function renderizzaTabellaCompleta() {
+            tbody.innerHTML = "";
             for (const [regione, cittaList] of Object.entries(datiViaggi)) {
-                let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
-                let trovato = cittaList.some(c => c.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === nomeCittaNormalizzato);
-                if (trovato) return `regione_${rId}`;
-            }
-            return "regione_altre_localita";
-        }
+                let rId = ottieniRegioneId(regione);
+                tbody.insertAdjacentHTML('beforeend', `<tr id="regione_${rId}"><td colspan="5" class="regione-header">📌 ${regione}</td></tr>`);
+                
+                let extraDellaRegione = (statoGlobale["_mappaCittaExtra"] && statoGlobale["_mappaCittaExtra"][regione]) ? statoGlobale["_mappaCittaExtra"][regione] : [];
+                let tutteLeCitta = [...cittaList, ...extraDellaRegione];
+                tutteLeCitta.sort((a, b) => a.localeCompare(b));
 
-        function generaSafeId(citta) {
-            return citta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
-        }
+                tutteLeCitta.forEach(citta => {
+                    let isExtra = extraDellaRegione.includes(citta);
+                    let safeId = generaSafeId(citta);
+                    let tastiAzione = isExtra ? `<div class="actions-container"><button class="btn-action" onclick="modificaCitta('${regione}','${citta}')">✏️</button><button class="btn-action" onclick="eliminaCitta('${regione}','${citta}')">🗑️</button></div>` : '';
 
-        function buildRowHTML(citta, idElementoTarget, isExtra = false) {
-            let safeId = generaSafeId(citta);
-            if (document.getElementById(`row_${safeId}`)) return;
-
-            let tastiAzione = isExtra ? `
-                <div class="actions-container">
-                    <button class="btn-action" onclick="modificaCitta(\`${citta.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" title="Modifica">✏️</button>
-                    <button class="btn-action" onclick="eliminaCitta(\`${citta.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" title="Elimina">🗑️</button>
-                </div>
-            ` : '';
-
-            let row = `
-                <tr id="row_${safeId}" class="${isExtra ? 'riga-extra' : ''}">
-                    <td class="col-citta" id="text_${safeId}">${citta} ${tastiAzione}</td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p1" onclick="salvaCambio('${safeId}', 'p1', this.checked)"></td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p2" onclick="salvaCambio('${safeId}', 'p2', this.checked)"></td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p3" onclick="salvaCambio('${safeId}', 'p3', this.checked)"></td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p4" onclick="salvaCambio('${safeId}', 'p4', this.checked)"></td>
-                </tr>
-            `;
-            
-            let targetRow = document.getElementById(idElementoTarget);
-            targetRow.insertAdjacentHTML('afterend', row);
-        }
-
-        function aggiornaStatoSincro(testo, tipo) {
-            let el = document.getElementById('sync-indicator');
-            if (!el) return;
-            el.innerText = testo;
-            if (tipo === 'success') el.style.color = '#16a34a';
-            else if (tipo === 'error') el.style.color = '#dc2626';
-            else el.style.color = '#d97706';
-        }
-
-        // Rigenerazione controllata e ordinata delle città extra sotto le regioni competenti
-        function renderCittaExtraInUI() {
-            document.querySelectorAll('.riga-extra').forEach(el => el.remove());
-            document.getElementById("regione_altre_localita").style.display = "none";
-
-            if (statoGlobale["_listaCittaExtra"]) {
-                // Ordina decrescente prima dell'afterend per vederle alfabeticamente crescenti
-                let extraOrdinata = [...statoGlobale["_listaCittaExtra"]].sort((a, b) => b.localeCompare(a));
-                extraOrdinata.forEach(cittaNome => {
-                    let targetRegioneId = trovaRegioneDellaCitta(cittaNome);
-                    if (targetRegioneId === "regione_altre_localita") {
-                        document.getElementById("regione_altre_localita").style.display = "table-row";
-                    }
-                    buildRowHTML(cittaNome, targetRegioneId, true);
+                    let row = `
+                        <tr id="row_${safeId}" class="${isExtra ? 'riga-extra' : ''}">
+                            <td class="col-citta">${citta} ${tastiAzione}</td>
+                            <td class="col-check"><input type="checkbox" id="${safeId}_p1" onclick="salvaCambio('${safeId}', 'p1', this.checked)"></td>
+                            <td class="col-check"><input type="checkbox" id="${safeId}_p2" onclick="salvaCambio('${safeId}', 'p2', this.checked)"></td>
+                            <td class="col-check"><input type="checkbox" id="${safeId}_p3" onclick="salvaCambio('${safeId}', 'p3', this.checked)"></td>
+                            <td class="col-check"><input type="checkbox" id="${safeId}_p4" onclick="salvaCambio('${safeId}', 'p4', this.checked)"></td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', row);
                 });
+
+                let inputRowHTML = `
+                    <tr id="input_row_${rId}" class="inline-add-row">
+                        <td colspan="5">
+                            <div class="inline-add-container">
+                                <input type="text" id="input_${rId}" placeholder="Aggiungi città in ${regione}...">
+                                <button onclick="aggiungiCittaInRegione('${regione}')">+</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', inputRowHTML);
             }
+            aggiornaSchermataSpunte();
+        }
+
+        function aggiungiCittaInRegione(nomeRegione) {
+            let rId = ottieniRegioneId(nomeRegione);
+            let inputField = document.getElementById(`input_${rId}`);
+            let nomeCitta = inputField.value.trim();
+            if (nomeCitta === "") return;
+
+            if (!statoGlobale["_mappaCittaExtra"]) statoGlobale["_mappaCittaExtra"] = {};
+            if (!statoGlobale["_mappaCittaExtra"][nomeRegione]) statoGlobale["_mappaCittaExtra"][nomeRegione] = [];
+
+            if (!statoGlobale["_mappaCittaExtra"][nomeRegione].includes(nomeCitta)) {
+                statoGlobale["_mappaCittaExtra"][nomeRegione].push(nomeCitta);
+            }
+
+            inputField.value = "";
+            renderizzaTabellaCompleta();
+            salvaEInvia();
         }
 
         async function caricaDatiDalCloud() {
             if (isSaving) return; 
             try {
                 let risposta = await fetch(API_URL);
-                let nuoviDati = await risposta.json();
-                if (!nuoviDati || typeof nuoviDati !== 'object') nuoviDati = {};
-                
-                statoGlobale = nuoviDati;
-                ultimoStatoCloud = JSON.parse(JSON.stringify(nuoviDati)); // Sincronizza lo snapshot di controllo locale
-
-                renderCittaExtraInUI();
-                aggiornaSchermata();
-                aggiornaStatoSincro("Sincronizzato ✔️", "success");
+                if (risposta.ok) {
+                    let nuoviDati = await risposta.json();
+                    if (nuoviDati && typeof nuoviDati === 'object') {
+                        statoGlobale = nuoviDati;
+                        localStorage.setItem('tabellone_viaggi', JSON.stringify(statoGlobale));
+                        renderizzaTabellaCompleta();
+                        indicator.innerHTML = "🟢 Sincronizzato sul Cloud";
+                        indicator.style.color = "green";
+                    }
+                }
             } catch (e) {
-                console.error("Errore sincro cloud:", e);
-                aggiornaStatoSincro("Connessione persa (Modalità offline) ⚠️", "error");
+                indicator.innerHTML = "⚠️ Solo Locale (Problema di rete)";
+                indicator.style.color = "orange";
+                renderizzaTabellaCompleta();
             }
         }
 
-        function aggiornaSchermata() {
+        function aggiornaSchermataSpunte() {
             let punteggi = { p1: 0, p2: 0, p3: 0, p4: 0 };
 
             document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                // RISOLTO IL BUG DELLO SPLIT: Isola l'elemento finale e riassembla correttamente la città
-                let parti = checkbox.id.split('_');
-                let persona = parti.pop(); 
-                let cittaId = parti.join('_'); 
+                let [cittaId, persona] = checkbox.id.split('_');
                 let chiave = `${cittaId}_${persona}`;
                 
                 if (statoGlobale[chiave] === true) {
@@ -303,27 +262,18 @@
             document.getElementById('score-p4').innerText = punteggi.p4;
         }
 
-        function aggiungiNuovaCitta() {
-            let inputField = document.getElementById('nuova-citta-input');
-            let nomeCitta = inputField.value.trim();
-            if (nomeCitta === "") return;
-
-            if (!statoGlobale["_listaCittaExtra"]) statoGlobale["_listaCittaExtra"] = [];
-            if (!statoGlobale["_listaCittaExtra"].includes(nomeCitta)) {
-                statoGlobale["_listaCittaExtra"].push(nomeCitta);
-            }
-
-            renderCittaExtraInUI();
-            aggiornaSchermata();
-            inputField.value = "";
-            inviaStatoAlCloud();
+        function salvaCambio(cittaId, persona, checked) {
+            let chiave = `${cittaId}_${persona}`;
+            statoGlobale[chiave] = checked;
+            aggiornaSchermataSpunte();
+            salvaEInvia();
         }
 
-        function eliminaCitta(nomeCitta) {
-            if (!confirm(`Vuoi davvero eliminare "${nomeCitta}" dalla lista?`)) return;
+        function eliminaCitta(nomeRegione, nomeCitta) {
+            if (!confirm(`Vuoi rimuovere "${nomeCitta}"?`)) return;
 
-            if (statoGlobale["_listaCittaExtra"]) {
-                statoGlobale["_listaCittaExtra"] = statoGlobale["_listaCittaExtra"].filter(c => c !== nomeCitta);
+            if (statoGlobale["_mappaCittaExtra"] && statoGlobale["_mappaCittaExtra"][nomeRegione]) {
+                statoGlobale["_mappaCittaExtra"][nomeRegione] = statoGlobale["_mappaCittaExtra"][nomeRegione].filter(c => c !== nomeCitta);
             }
 
             let safeId = generaSafeId(nomeCitta);
@@ -332,21 +282,18 @@
             delete statoGlobale[`${safeId}_p3`];
             delete statoGlobale[`${safeId}_p4`];
 
-            renderCittaExtraInUI();
-            aggiornaSchermata();
-            inviaStatoAlCloud();
+            renderizzaTabellaCompleta();
+            salvaEInvia();
         }
 
-        function modificaCitta(vecchioNome) {
+        function modificaCitta(nomeRegione, vecchioNome) {
             let nuovoNome = prompt(`Modifica il nome della città:`, vecchioNome);
             if (nuovoNome === null || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
             nuovoNome = nuovoNome.trim();
 
-            if (statoGlobale["_listaCittaExtra"]) {
-                let index = statoGlobale["_listaCittaExtra"].indexOf(vecchioNome);
-                if (index !== -1) {
-                    statoGlobale["_listaCittaExtra"][index] = nuovoNome;
-                }
+            if (statoGlobale["_mappaCittaExtra"] && statoGlobale["_mappaCittaExtra"][nomeRegione]) {
+                let index = statoGlobale["_mappaCittaExtra"][nomeRegione].indexOf(vecchioNome);
+                if (index !== -1) statoGlobale["_mappaCittaExtra"][nomeRegione][index] = nuovoNome;
             }
 
             let vecchioSafeId = generaSafeId(vecchioNome);
@@ -359,73 +306,34 @@
                 }
             });
 
-            renderCittaExtraInUI();
-            aggiornaSchermata();
-            inviaStatoAlCloud();
+            renderizzaTabellaCompleta();
+            salvaEInvia();
         }
 
-        function salvaCambio(cittaId, persona, checked) {
-            let chiave = `${cittaId}_${persona}`;
-            statoGlobale[chiave] = checked;
-            aggiornaSchermata();
-            inviaStatoAlCloud();
-        }
-
-        // UNIONE DELTA REALE ANTI-CONCORRENZA: Unisce intelligentemente solo i tuoi cambiamenti locali prima di salvare
-        async function inviaStatoAlCloud() {
-            isSaving = true; 
-            aggiornaStatoSincro("Salvataggio... ⏳", "pending");
+        async function salvaEInvia() {
+            localStorage.setItem('tabellone_viaggi', JSON.stringify(statoGlobale));
+            isSaving = true;
             try {
-                // 1. Scarica lo stato in tempo reale presente sul server cloud
-                let risposta = await fetch(API_URL);
-                let freshCloud = await risposta.json();
-                if (!freshCloud || typeof freshCloud !== 'object') freshCloud = {};
-
-                // 2. Calcola ed applica solo i cambiamenti effettuati sul tuo dispositivo rispetto all'ultimo allineamento
-                let tutteLeChiavi = new Set([...Object.keys(statoGlobale), ...Object.keys(ultimoStatoCloud)]);
-                for (let k of tutteLeChiavi) {
-                    if (k !== "_listaCittaExtra" && statoGlobale[k] !== ultimoStatoCloud[k]) {
-                        if (statoGlobale[k] === true) freshCloud[k] = true;
-                        else delete freshCloud[k];
-                    }
-                }
-
-                // 3. Unione logica e conservativa per la lista delle città extra
-                let localExtra = statoGlobale["_listaCittaExtra"] || [];
-                let oldExtra = ultimoStatoCloud["_listaCittaExtra"] || [];
-                let cloudExtra = freshCloud["_listaCittaExtra"] || [];
-
-                // Aggiunge le città nuove inserite localmente
-                localExtra.forEach(c => { if (!cloudExtra.includes(c)) cloudExtra.push(c); });
-                // Elimina le città rimosse esplicitamente localmente
-                oldExtra.forEach(c => { if (!localExtra.includes(c)) cloudExtra = cloudExtra.filter(i => i !== c); });
-                freshCloud["_listaCittaExtra"] = cloudExtra;
-
-                // 4. Invia il pacchetto finale unito
-                await fetch(API_URL, {
-                    method: "PUT", 
+                let risposta = await fetch(API_URL, {
+                    method: "PUT",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(freshCloud)
+                    body: JSON.stringify(statoGlobale)
                 });
-
-                // 5. Riallinea lo stato locale e lo snapshot di controllo
-                statoGlobale = JSON.parse(JSON.stringify(freshCloud));
-                ultimoStatoCloud = JSON.parse(JSON.stringify(freshCloud));
-                
-                renderCittaExtraInUI();
-                aggiornaSchermata();
-                aggiornaStatoSincro("Modifiche salvate! ✔️", "success");
+                if (risposta.ok) {
+                    indicator.innerHTML = "🟢 Sincronizzato sul Cloud";
+                    indicator.style.color = "green";
+                }
             } catch (e) {
-                console.error("Errore invio cloud:", e);
-                aggiornaStatoSincro("Errore di salvataggio cloud ⚠️", "error");
+                indicator.innerHTML = "⚠️ Errore Cloud - Salvato solo Locale";
+                indicator.style.color = "red";
             } finally {
-                isSaving = false; 
+                isSaving = false;
             }
         }
 
-        // Avvio iniziale e polling passivo ogni 5 secondi
+        renderizzaTabellaCompleta();
         caricaDatiDalCloud();
-        setInterval(caricaDatiDalCloud, 5000);
+        setInterval(caricaDatiDalCloud, 4000);
     </script>
 </body>
 </html>
