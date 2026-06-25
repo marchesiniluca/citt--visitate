@@ -10,7 +10,7 @@
         .header-titolo { text-align: center; color: #2f4f4f; font-size: 22px; margin: 15px 0 5px 0; font-weight: bold; }
         .subtitle { text-align: center; color: #666; margin-bottom: 5px; font-size: 13px; }
         
-        /* Indicatore di sincronizzazione */
+        /* Indicatore di stato sincronizzazione in tempo reale */
         #sync-indicator { text-align: center; font-size: 12px; margin-bottom: 12px; font-weight: bold; transition: color 0.3s; }
 
         /* BLOCCO FISSO IN ALTO (Dashboard + Nomi Colonne) */
@@ -158,7 +158,7 @@
     <script>
         const API_URL = "https://api.npoint.io/cb8da9e69cba4ba8e1b9"; 
         let statoGlobale = {};
-        let ultimoStatoCloud = {}; // Snapshot per calcolare le modifiche locali (Delta)
+        let ultimoStatoCloud = {}; // Copia specchio per calcolare le modifiche locali ed evitare sovrascritture cieche
         let isSaving = false; 
 
         const datiViaggi = {
@@ -186,11 +186,12 @@
 
         const tbody = document.getElementById('table-body');
 
-        // Generazione iniziale ordinata delle sezioni fisse
+        // Generazione iniziale ordinata delle sezioni fisse (A-Z)
         for (const [regione, cittaList] of Object.entries(datiViaggi)) {
             let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
             tbody.insertAdjacentHTML('beforeend', `<tr id="regione_${rId}"><td colspan="5" class="regione-header">${regione}</td></tr>`);
-            cittaList.sort((a, b) => a.localeCompare(b)).forEach(citta => buildRowHTML(citta, `regione_${rId}`, false));
+            // Ordinamento decrescente prima dell'afterend per posizionarle alfabeticamente crescenti sullo schermo
+            cittaList.sort((a, b) => b.localeCompare(a)).forEach(citta => buildRowHTML(citta, `regione_${rId}`, false));
         }
 
         function trovaRegioneDellaCitta(nomeCitta) {
@@ -213,8 +214,8 @@
 
             let tastiAzione = isExtra ? `
                 <div class="actions-container">
-                    <button class="btn-action" onclick="modificaCitta('${citta}')" title="Modifica">✏️</button>
-                    <button class="btn-action" onclick="eliminaCitta('${citta}')" title="Elimina">🗑️</button>
+                    <button class="btn-action" onclick="modificaCitta(\`${citta.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" title="Modifica">✏️</button>
+                    <button class="btn-action" onclick="eliminaCitta(\`${citta.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" title="Elimina">🗑️</button>
                 </div>
             ` : '';
 
@@ -241,13 +242,15 @@
             else el.style.color = '#d97706';
         }
 
-        // Funzione isolata per rigenerare le città extra senza bug visivi
-        function rigeneraCittaExtra() {
+        // Rigenerazione controllata e ordinata delle città extra sotto le regioni competenti
+        function renderCittaExtraInUI() {
             document.querySelectorAll('.riga-extra').forEach(el => el.remove());
             document.getElementById("regione_altre_localita").style.display = "none";
 
             if (statoGlobale["_listaCittaExtra"]) {
-                statoGlobale["_listaCittaExtra"].forEach(cittaNome => {
+                // Ordina decrescente prima dell'afterend per vederle alfabeticamente crescenti
+                let extraOrdinata = [...statoGlobale["_listaCittaExtra"]].sort((a, b) => b.localeCompare(a));
+                extraOrdinata.forEach(cittaNome => {
                     let targetRegioneId = trovaRegioneDellaCitta(cittaNome);
                     if (targetRegioneId === "regione_altre_localita") {
                         document.getElementById("regione_altre_localita").style.display = "table-row";
@@ -265,14 +268,14 @@
                 if (!nuoviDati || typeof nuoviDati !== 'object') nuoviDati = {};
                 
                 statoGlobale = nuoviDati;
-                ultimoStatoCloud = JSON.parse(JSON.stringify(nuoviDati)); // Sincronizza lo snapshot locale
+                ultimoStatoCloud = JSON.parse(JSON.stringify(nuoviDati)); // Sincronizza lo snapshot di controllo locale
 
-                rigeneraCittaExtra();
+                renderCittaExtraInUI();
                 aggiornaSchermata();
                 aggiornaStatoSincro("Sincronizzato ✔️", "success");
             } catch (e) {
                 console.error("Errore sincro cloud:", e);
-                aggiornaStatoSincro("Connessione persa (Modalità offline sicura) ⚠️", "error");
+                aggiornaStatoSincro("Connessione persa (Modalità offline) ⚠️", "error");
             }
         }
 
@@ -280,7 +283,7 @@
             let punteggi = { p1: 0, p2: 0, p3: 0, p4: 0 };
 
             document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                // RISOLTO: Estrae la persona partendo dalla fine, gestendo correttamente i nomi con "_"
+                // RISOLTO IL BUG DELLO SPLIT: Isola l'elemento finale e riassembla correttamente la città
                 let parti = checkbox.id.split('_');
                 let persona = parti.pop(); 
                 let cittaId = parti.join('_'); 
@@ -310,7 +313,8 @@
                 statoGlobale["_listaCittaExtra"].push(nomeCitta);
             }
 
-            rigeneraCittaExtra();
+            renderCittaExtraInUI();
+            aggiornaSchermata();
             inputField.value = "";
             inviaStatoAlCloud();
         }
@@ -328,7 +332,8 @@
             delete statoGlobale[`${safeId}_p3`];
             delete statoGlobale[`${safeId}_p4`];
 
-            rigeneraCittaExtra();
+            renderCittaExtraInUI();
+            aggiornaSchermata();
             inviaStatoAlCloud();
         }
 
@@ -354,7 +359,8 @@
                 }
             });
 
-            rigeneraCittaExtra();
+            renderCittaExtraInUI();
+            aggiornaSchermata();
             inviaStatoAlCloud();
         }
 
@@ -365,44 +371,48 @@
             inviaStatoAlCloud();
         }
 
-        // UNIONE DELTA REALE: Scarica l'ultimo stato, applica solo le TUE modifiche e risalva
+        // UNIONE DELTA REALE ANTI-CONCORRENZA: Unisce intelligentemente solo i tuoi cambiamenti locali prima di salvare
         async function inviaStatoAlCloud() {
             isSaving = true; 
             aggiornaStatoSincro("Salvataggio... ⏳", "pending");
             try {
+                // 1. Scarica lo stato in tempo reale presente sul server cloud
                 let risposta = await fetch(API_URL);
                 let freshCloud = await risposta.json();
                 if (!freshCloud || typeof freshCloud !== 'object') freshCloud = {};
 
-                // Trova e applica solo i cambiamenti effettuati su questo dispositivo
-                let allKeys = new Set([...Object.keys(statoGlobale), ...Object.keys(ultimoStatoCloud)]);
-                for (let k of allKeys) {
+                // 2. Calcola ed applica solo i cambiamenti effettuati sul tuo dispositivo rispetto all'ultimo allineamento
+                let tutteLeChiavi = new Set([...Object.keys(statoGlobale), ...Object.keys(ultimoStatoCloud)]);
+                for (let k of tutteLeChiavi) {
                     if (k !== "_listaCittaExtra" && statoGlobale[k] !== ultimoStatoCloud[k]) {
                         if (statoGlobale[k] === true) freshCloud[k] = true;
                         else delete freshCloud[k];
                     }
                 }
 
-                // Sincronizzazione intelligente delle città extra
+                // 3. Unione logica e conservativa per la lista delle città extra
                 let localExtra = statoGlobale["_listaCittaExtra"] || [];
                 let oldExtra = ultimoStatoCloud["_listaCittaExtra"] || [];
                 let cloudExtra = freshCloud["_listaCittaExtra"] || [];
 
+                // Aggiunge le città nuove inserite localmente
                 localExtra.forEach(c => { if (!cloudExtra.includes(c)) cloudExtra.push(c); });
+                // Elimina le città rimosse esplicitamente localmente
                 oldExtra.forEach(c => { if (!localExtra.includes(c)) cloudExtra = cloudExtra.filter(i => i !== c); });
                 freshCloud["_listaCittaExtra"] = cloudExtra;
 
-                // Invio finale unito staccato dal PUT distruttivo
+                // 4. Invia il pacchetto finale unito
                 await fetch(API_URL, {
                     method: "PUT", 
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(freshCloud)
                 });
 
+                // 5. Riallinea lo stato locale e lo snapshot di controllo
                 statoGlobale = JSON.parse(JSON.stringify(freshCloud));
                 ultimoStatoCloud = JSON.parse(JSON.stringify(freshCloud));
                 
-                rigeneraCittaExtra();
+                renderCittaExtraInUI();
                 aggiornaSchermata();
                 aggiornaStatoSincro("Modifiche salvate! ✔️", "success");
             } catch (e) {
@@ -413,7 +423,7 @@
             }
         }
 
-        // Primo avvio immediato e controllo passivo ogni 5 secondi
+        // Avvio iniziale e polling passivo ogni 5 secondi
         caricaDatiDalCloud();
         setInterval(caricaDatiDalCloud, 5000);
     </script>
