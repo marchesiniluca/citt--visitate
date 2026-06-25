@@ -5,12 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tabellone Viaggi Italia</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0 0 70px 0; color: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0 0 30px 0; color: #333; }
         
         .header-titolo { text-align: center; color: #2f4f4f; font-size: 22px; margin: 15px 0 5px 0; font-weight: bold; }
         .subtitle { text-align: center; color: #666; margin-bottom: 15px; font-size: 13px; }
         
-        /* BLOCCO FISSO IN ALTO (Dashboard + Nomi Colonne) */
+        /* COLORI UTENTI */
+        .color-p1 { color: #3498db !important; } /* Luca - Blu */
+        .color-p2 { color: #e74c3c !important; } /* Elena - Rosso */
+        .color-p3 { color: #2ecc71 !important; } /* Alessia - Verde */
+        .color-p4 { color: #f39c12 !important; } /* Filippo - Arancione */
+
+        .bg-p1 { background-color: #3498db !important; }
+        .bg-p2 { background-color: #e74c3c !important; }
+        .bg-p3 { background-color: #2ecc71 !important; }
+        .bg-p4 { background-color: #f39c12 !important; }
+
+        input[id$="_p1"] { accent-color: #3498db; }
+        input[id$="_p2"] { accent-color: #e74c3c; }
+        input[id$="_p3"] { accent-color: #2ecc71; }
+        input[id$="_p4"] { accent-color: #f39c12; }
+
+        /* BLOCCO FISSO IN ALTO */
         .top-sticky-container {
             position: sticky;
             top: 0;
@@ -27,11 +43,11 @@
             text-align: center; 
             margin-bottom: 10px;
         }
-        .stat-box { background: white; padding: 6px; border-radius: 6px; border: 1px solid #e0eeee; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .stat-name { font-weight: bold; color: #2f4f4f; font-size: 13px; }
-        .stat-score { font-size: 18px; font-weight: bold; color: #008b8b; margin-top: 3px; }
+        .stat-box { background: white; padding: 8px; border-radius: 8px; border: 1px solid #e0eeee; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .stat-name { font-weight: bold; font-size: 13px; }
+        .stat-score { font-size: 20px; font-weight: bold; margin-top: 5px; }
         
-        /* Testata fissa coordinata con la tabella */
+        /* Testata fissa */
         .fake-header {
             background-color: #2f4f4f;
             color: white;
@@ -43,223 +59,182 @@
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
             padding: 12px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .fake-header div:first-child { text-align: left; padding-left: 15px; }
+        .fake-header div.p-name { text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
 
-        /* CONTENUTO SCORREVOLE */
+        /* TABELLA */
         .table-container { padding: 0 15px 20px 15px; }
         table { width: 100%; border-collapse: collapse; background: white; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         
-        td { padding: 12px 0; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
-        tr:last-child td { border-bottom: none; }
-        tr:nth-child(even) { background-color: #f9fbfb; }
+        td { padding: 10px 0; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
+        tr:nth-child(even) { background-color: #fcfcfc; }
+        tr:hover { background-color: #f1f8f8; }
         
-        .col-citta { width: 40%; text-align: left; padding-left: 15px; font-weight: 500; }
+        .col-citta { width: 40%; text-align: left; padding-left: 15px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; }
         .col-check { width: 15%; }
         
-        .regione-header { background-color: #e0eeee !important; font-weight: bold; text-align: left; color: #2f4f4f; padding-left: 15px; font-size: 15px; height: 38px; }
+        .regione-header { background-color: #e0eeee !important; font-weight: bold; text-align: left; color: #2f4f4f; padding-left: 15px; font-size: 16px; height: 45px; border-top: 2px solid #ccc; }
         
-        input[type="checkbox"] { transform: scale(1.4); cursor: pointer; }
+        input[type="checkbox"] { transform: scale(1.5); cursor: pointer; }
 
-        /* PULSANTI DI MODIFICA/ELIMINAZIONE */
-        .actions-container {
-            display: block;
-            font-size: 11px;
-            margin-top: 4px;
-        }
-        .btn-action {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0 4px;
-            font-size: 12px;
-            opacity: 0.7;
-        }
-        .btn-action:hover { opacity: 1; }
+        /* AZIONI EXTRA SULLE CITTÀ */
+        .actions-container { display: flex; gap: 5px; padding-right: 10px; }
+        .btn-action { background: #f4f7f6; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; padding: 4px 6px; font-size: 12px; transition: 0.2s; }
+        .btn-action:hover { background: #e0eeee; border-color: #008b8b; }
         
-        /* BARRA AGGIUNGICI CITTÀ FISSA IN BASSO */
-        .add-city-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
-            padding: 12px 15px;
-            display: flex;
-            gap: 10px;
-            z-index: 1002;
-        }
-        .add-city-bar input[type="text"] {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid #ccc;
-            border-radius: 20px;
-            font-size: 14px;
-            outline: none;
-        }
-        .add-city-bar button {
-            background-color: #008b8b;
-            color: white;
-            border: none;
-            padding: 0 20px;
-            border-radius: 20px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .add-city-bar button:active { background-color: #2f4f4f; }
+        /* AGGIUNGI CITTÀ PER REGIONE */
+        .add-row { background-color: #fafafa !important; }
+        .add-bar-region { display: flex; gap: 10px; padding: 5px 15px; }
+        .add-bar-region input[type="text"] { flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; outline: none; }
+        .add-bar-region input[type="text"]:focus { border-color: #008b8b; box-shadow: 0 0 5px rgba(0,139,139,0.3); }
+        .add-bar-region button { background-color: #008b8b; color: white; border: none; padding: 0 15px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .add-bar-region button:hover { background-color: #2f4f4f; }
+
+        /* Loader */
+        #sync-status { text-align: center; font-size: 11px; color: #888; margin-bottom: 5px; height: 15px; }
 
         @media (max-width: 600px) { 
             .dashboard { grid-template-columns: repeat(2, 1fr); }
             .fake-header { font-size: 12px; padding: 10px 0; }
-            td { font-size: 13px; padding: 10px 0; }
+            td { font-size: 13px; padding: 8px 0; }
+            input[type="checkbox"] { transform: scale(1.3); }
+            .col-citta { flex-direction: column; align-items: flex-start; gap: 5px; }
         }
     </style>
 </head>
 <body>
 
     <div class="header-titolo">✈️ Città Visitate d'Italia</div>
-    <div class="subtitle">Aggiornamento automatico e salvataggio condiviso in tempo reale</div>
+    <div class="subtitle">Salvataggio Sicuro & Colori Personalizzati</div>
+    <div id="sync-status">Sincronizzazione attiva...</div>
 
     <div class="top-sticky-container">
         <div class="dashboard">
-            <div class="stat-box"><div class="stat-name">Luca</div><div class="stat-score" id="score-p1">0</div></div>
-            <div class="stat-box"><div class="stat-name">Elena</div><div class="stat-score" id="score-p2">0</div></div>
-            <div class="stat-box"><div class="stat-name">Alessia</div><div class="stat-score" id="score-p3">0</div></div>
-            <div class="stat-box"><div class="stat-name">Filippo</div><div class="stat-score" id="score-p4">0</div></div>
+            <div class="stat-box"><div class="stat-name color-p1">Luca</div><div class="stat-score color-p1" id="score-p1">0</div></div>
+            <div class="stat-box"><div class="stat-name color-p2">Elena</div><div class="stat-score color-p2" id="score-p2">0</div></div>
+            <div class="stat-box"><div class="stat-name color-p3">Alessia</div><div class="stat-score color-p3" id="score-p3">0</div></div>
+            <div class="stat-box"><div class="stat-name color-p4">Filippo</div><div class="stat-score color-p4" id="score-p4">0</div></div>
         </div>
 
         <div class="fake-header">
             <div>Città</div>
-            <div>Luca</div>
-            <div>Elena</div>
-            <div>Alessia</div>
-            <div>Filippo</div>
+            <div class="p-name color-p1">Luca</div>
+            <div class="p-name color-p2">Elena</div>
+            <div class="p-name color-p3">Alessia</div>
+            <div class="p-name color-p4">Filippo</div>
         </div>
     </div>
 
     <div class="table-container">
         <table>
             <tbody id="table-body">
-                <tr id="regione_altre_localita" style="display:none;"><td colspan="5" class="regione-header">📌 Altre Località</td></tr>
-            </tbody>
+                </tbody>
         </table>
     </div>
 
-    <div class="add-city-bar">
-        <input type="text" id="nuova-citta-input" placeholder="Scrivi una città (es. Sanremo, Otranto...)">
-        <button onclick="aggiungiNuovaCitta()">+</button>
-    </div>
-
     <script>
-        // Link diretto pulito e sbloccato per npoint
         const API_URL = "https://api.npoint.io/cb8da9e69cba4ba8e1b9"; 
         let statoGlobale = {};
-        let isSaving = false; // Flag di controllo per evitare conflitti di rete simultanei
+        let isSaving = false;
+        let ultimaFirmaStruttura = ""; // Per capire se dobbiamo ridisegnare l'HTML
 
-        // Database completo delle 20 regioni d'Italia (25 città ciascuna)
         const datiViaggi = {
-            "Abruzzo": ["L'Aquila", "Pescara", "Chieti", "Teramo", "Montesilvano", "Avezzano", "Vasto", "Lanciano", "Sulmona", "Roseto degli Abruzzi", "Ortona", "Francavilla al Mare", "Giulianova", "San Salvo", "Spoltore", "Alba Adriatica", "Atri", "Martinsicuro", "Silvi", "Pineto", "Pescasseroli", "Roccaraso", "Scanno", "Santo Stefano di Sessanio", "Castelli"],
-            "Basilicata": ["Potenza", "Matera", "Melfi", "Pisticci", "Lavello", "Rionero in Vulture", "Lauria", "Bernalda", "Venosa", "Avigliano", "Montescaglioso", "Ferrandina", "Maratea", "Scanzano Jonico", "Policoro", "Tursi", "Lagonegro", "Senise", "Rotonda", "Viggiano", "Genzano di Lucania", "Acerenza", "Castelmezzano", "Pietrapertosa", "Aliano"],
-            "Calabria": ["Catanzaro", "Reggio Calabria", "Cosenza", "Crotone", "Lamezia Terme", "Vibo Valentia", "Rossano", "Corigliano Calabro", "Rende", "Castrovillari", "Acri", "Palmi", "Soverato", "Tropea", "Gioia Tauro", "Scalea", "Amantea", "Paola", "Locri", "Siderno", "Scilla", "Pizzo", "Diamante", "Gerace", "Stilo"],
-            "Campania": ["Napoli", "Salerno", "Caserta", "Benevento", "Avellino", "Giugliano in Campania", "Torre del Greco", "Pozzuoli", "Aversa", "Battipaglia", "Cava de' Tirreni", "Scafati", "Casoria", "Castellammare di Stabia", "Acerra", "Ercolano", "Marano di Napoli", "Portici", "Afragola", "Sorrento", "Amalfi", "Positano", "Capri", "Ischia", "Pompei"],
-            "Emilia-Romagna": ["Bologna", "Parma", "Modena", "Reggio Emilia", "Ravenna", "Rimini", "Ferrara", "Forlì", "Piacenza", "Cesena", "Imola", "Faenza", "Carpi", "Sassuolo", "Riccione", "Cattolica", "Cesenatico", "Lugo", "Fidenza", "Cento", "Comacchio", "Bellaria-Igea Marina", "Maranello", "Bobbio", "Brisighella"],
-            "Friuli-Venezia Giulia": ["Trieste", "Udine", "Pordenone", "Gorizia", "Monfalcone", "Sacile", "Cordenons", "Codroipo", "Porcia", "Cervignano del Friuli", "Latisana", "Fontanafredda", "Spilimbergo", "Fiume Veneto", "Grado", "Lignano Sabbiadoro", "San Daniele del Friuli", "Palmanova", "Aquileia", "Tarvisio", "Cividale del Friuli", "Gemona del Friuli", "Tolmezzo", "Maniago", "Venzone"],
-            "Lazio": ["Roma", "Latina", "Viterbo", "Rieti", "Frosinone", "Guidonia Montecelio", "Fiumicino", "Aprilia", "Pomezia", "Anzio", "Tivoli", "Velletri", "Civitavecchia", "Nettuno", "Terracina", "Formia", "Fondia", "Marino", "Frascati", "Sabaudia", "Sperlonga", "Gaeta", "Tuscania", "Tarquinia", "Subiaco"],
-            "Liguria": ["Genova", "La Spezia", "Savona", "Sanremo", "Imperia", "Rapallo", "Chiavari", "Ventimiglia", "Albenga", "Sarzana", "Sestri Levante", "Taggia", "Varazze", "Lavagna", "Alassio", "Ceriale", "Loano", "Finale Ligure", "Portofino", "Camogli", "Lerici", "Vernazza", "Monterosso al Mare", "Riomaggiore", "Portovenere"],
-            "Lombardia": ["Milano", "Brescia", "Bergamo", "Monza", "Como", "Varese", "Pavia", "Cremona", "Mantova", "Lecco", "Lodi", "Sondrio", "Busto Arsizio", "Sesto San Giovanni", "Cinicello Balsamo", "Vigevano", "Legnano", "Gallarate", "Rho", "Saronno", "Sirmione", "Bellagio", "Vigevano", "Crema", "Livigno"],
-            "Marche": ["Ancona", "Pesaro", "Fano", "Ascoli Piceno", "Macerata", "Civitanova Marche", "Senigallia", "Jesi", "San Benedetto del Tronto", "Fabriano", "Porto Sant'Elpidio", "Recanati", "Tolentino", "Fermo", "Osimo", "Falconara Marittima", "Urbino", "Gradara", "Loreto", "Corinaldo", "Camerino", "San Leo", "Grottammare", "Offida", "Mondavio"],
-            "Molise": ["Campobasso", "Isernia", "Termoli", "Venafro", "Bojano", "Campomarino", "Larino", "Montenero di Bisaccia", "Agnone", "Riccia", "Guglionesi", "Trivento", "Frosolone", "Scapoli", "Sepino", "Fornelli", "Castel San Vincenzo", "Bagnoli del Trigno", "Pesco Pennataro", "Capracotta", "Roccamandolfi", "Ferrazzano", "Petrella Tifernina", "Gildone", "Guardialfiera"],
-            "Piemonte": ["Torino", "Novara", "Alessandria", "Asti", "Cuneo", "Moncalieri", "Collegno", "Rivoli", "Vercelli", "Biella", "Alba", "Bra", "Verbania", "Nichelino", "Settimo Torinese", "Venaria Reale", "Chieri", "Casale Monferrato", "Pinerolo", "Ivrea", "Domodossola", "Arona", "Stresa", "Susa", "Saluzzo"],
-            "Puglia": ["Bari", "Taranto", "Foggia", "Lecce", "Andria", "Barletta", "Brindisi", "Altamura", "Molfetta", "Manfredonia", "Cerignola", "Bitonto", "San Severo", "Bisceglie", "Trani", "Gallipoli", "Otranto", "Alberobello", "Polignano a Mare", "Monopoli", "Ostuni", "Vieste", "San Giovanni Rotondo", "Peschici", "Santa Maria di Leuca"],
-            "Sardegna": ["Cagliari", "Sassari", "Quartu Sant'Elena", "Olbia", "Alghero", "Nuoro", "Oristano", "Carbonia", "Selargius", "Iglesias", "Assemini", "Porto Torres", "Sestu", "Capoterra", "Monserrato", "Siniscola", "Tortolì", "Arzachena", "Bosa", "Castelsardo", "Carloforte", "Villasimius", "Pula", "Orgosolo", "Stintino"],
-            "Sicilia": ["Palermo", "Catania", "Messina", "Siracusa", "Marsala", "Gela", "Ragusa", "Trapani", "Caltanissetta", "Agrigento", "Bagheria", "Acireale", "Modica", "Mazara del Vallo", "Misterbianco", "Paternò", "Castelvetrano", "Augusta", "Taormina", "Cefalù", "Noto", "San Vito Lo Capo", "Erice", "Monreale", "Favignana"],
-            "Toscana": ["Firenze", "Prato", "Livorno", "Arezzo", "Pistoia", "Pisa", "Lucca", "Grosseto", "Massa", "Siena", "Carrara", "Viareggio", "Pistoia", "Scandicci", "Sesto Fiorentino", "Empoli", "Capannori", "Cascina", "Piombino", "San Gimignano", "Volterra", "Montepulciano", "Cortona", "Forte dei Marmi", "Portoferraio"],
-            "Trentino-Alto Adige": ["Trento", "Bolzano", "Rovereto", "Merano", "Bressanone", "Pergine Valsugana", "Laives", "Arco", "Riva del Garda", "Brunico", "Appiano sulla Strada del Vino", "Lana", "Caldaro sulla Strada del Vino", "Renon", "Vipiteno", "Ortisei", "Cavalese", "Canazei", "Pinzolo", "Madonna di Campiglio", "Predazzo", "Mezzolombardo", "Borgo Valsugana", "Cles", "Levico Terme"],
-            "Umbria": ["Perugia", "Terni", "Foligno", "Città di Castello", "Spoleto", "Gubbio", "Assisi", "Todi", "Orvieto", "Narni", "Bastia Umbra", "Marsciano", "Corciano", "Umbertide", "Castiglione del Lago", "Gualdo Tadino", "Amelia", "Spello", "Deruta", "Norcia", "Cascia", "Monteleone di Spoleto", "Panicale", "Bevagna", "Trevi"],
-            "Valle d'Aosta": ["Aosta", "Saint-Vincent", "Châtillon", "Sarre", "Pont-Saint-Martin", "Quart", "Saint-Christophe", "Gressan", "Courmayeur", "Donnas", "Brusson", "Gressoney-Saint-Jean", "Cogne", "Breuil-Cervinia", "Valtournenche", "Morgex", "La Salle", "Nus", "Fenis", "Verres", "Pre-Saint-Didier", "Arvier", "Bard", "Saint-Pierre", "Etroubles"],
-            "Veneto": ["Venezia", "Verona", "Padova", "Vicenza", "Treviso", "Rovigo", "Chioggia", "Bassano del Grappa", "San Donà di Piave", "Schio", "Mire", "Conegliano", "Castelfranco Veneto", "Villafranca di Verona", "Belluno", "Feltre", "Cortina d'Ampezzo", "Jesolo", "Caorle", "Peschiera del Garda", "Lazise", "Bardolino", "Asolo", "Marostica", "Arqua Petrarca"]
+            "Abruzzo": ["L'Aquila", "Pescara", "Chieti", "Teramo", "Montesilvano", "Avezzano", "Vasto", "Lanciano", "Sulmona", "Roseto degli Abruzzi"],
+            "Basilicata": ["Potenza", "Matera", "Melfi", "Pisticci", "Lavello", "Rionero in Vulture", "Lauria", "Bernalda", "Venosa", "Avigliano"],
+            "Calabria": ["Catanzaro", "Reggio Calabria", "Cosenza", "Crotone", "Lamezia Terme", "Vibo Valentia", "Rossano", "Corigliano Calabro", "Rende", "Tropea"],
+            "Campania": ["Napoli", "Salerno", "Caserta", "Benevento", "Avellino", "Sorrento", "Amalfi", "Positano", "Capri", "Pompei"],
+            "Emilia-Romagna": ["Bologna", "Parma", "Modena", "Reggio Emilia", "Ravenna", "Rimini", "Ferrara", "Forlì", "Piacenza", "Riccione"],
+            "Friuli-Venezia Giulia": ["Trieste", "Udine", "Pordenone", "Gorizia", "Monfalcone", "Lignano Sabbiadoro", "Tarvisio"],
+            "Lazio": ["Roma", "Latina", "Viterbo", "Rieti", "Frosinone", "Tivoli", "Civitavecchia", "Terracina", "Sperlonga", "Gaeta"],
+            "Liguria": ["Genova", "La Spezia", "Savona", "Sanremo", "Imperia", "Portofino", "Camogli", "Vernazza", "Monterosso al Mare", "Riomaggiore"],
+            "Lombardia": ["Milano", "Brescia", "Bergamo", "Monza", "Como", "Varese", "Pavia", "Cremona", "Mantova", "Lecco", "Sirmione"],
+            "Marche": ["Ancona", "Pesaro", "Fano", "Ascoli Piceno", "Macerata", "San Benedetto del Tronto", "Urbino", "Loreto"],
+            "Molise": ["Campobasso", "Isernia", "Termoli", "Venafro", "Agnone", "Capracotta"],
+            "Piemonte": ["Torino", "Novara", "Alessandria", "Asti", "Cuneo", "Verbania", "Stresa", "Alba"],
+            "Puglia": ["Bari", "Taranto", "Foggia", "Lecce", "Brindisi", "Gallipoli", "Otranto", "Alberobello", "Polignano a Mare", "Vieste"],
+            "Sardegna": ["Cagliari", "Sassari", "Olbia", "Alghero", "Nuoro", "Oristano", "Villasimius", "Stintino"],
+            "Sicilia": ["Palermo", "Catania", "Messina", "Siracusa", "Trapani", "Agrigento", "Taormina", "Cefalù", "Noto", "San Vito Lo Capo"],
+            "Toscana": ["Firenze", "Prato", "Livorno", "Arezzo", "Pisa", "Siena", "Viareggio", "San Gimignano", "Forte dei Marmi", "Lucca"],
+            "Trentino-Alto Adige": ["Trento", "Bolzano", "Rovereto", "Merano", "Riva del Garda", "Ortisei", "Canazei", "Madonna di Campiglio"],
+            "Umbria": ["Perugia", "Terni", "Foligno", "Spoleto", "Gubbio", "Assisi", "Orvieto", "Norcia"],
+            "Valle d'Aosta": ["Aosta", "Courmayeur", "Breuil-Cervinia", "Cogne", "Saint-Vincent"],
+            "Veneto": ["Venezia", "Verona", "Padova", "Vicenza", "Treviso", "Cortina d'Ampezzo", "Jesolo", "Peschiera del Garda", "Bardolino"]
         };
 
-        const tbody = document.getElementById('table-body');
-
-        // Generazione iniziale ordinata delle sezioni fisse
-        for (const [regione, cittaList] of Object.entries(datiViaggi)) {
-            let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
-            tbody.insertAdjacentHTML('beforeend', `<tr id="regione_${rId}"><td colspan="5" class="regione-header">${regione}</td></tr>`);
-            cittaList.sort((a, b) => a.localeCompare(b)).forEach(citta => buildRowHTML(citta, `regione_${rId}`, false));
+        function generaSafeId(stringa) {
+            return stringa.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
         }
 
-        function trovaRegioneDellaCitta(nomeCitta) {
-            let nomeCittaNormalizzato = nomeCitta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-            for (const [regione, cittaList] of Object.entries(datiViaggi)) {
-                let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
-                let trovato = cittaList.some(c => c.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === nomeCittaNormalizzato);
-                if (trovato) return `regione_${rId}`;
+        function generaFirmaStruttura(dati) {
+            let firma = "";
+            for(let key in dati) {
+                if(key.startsWith('extra_')) firma += key + ":" + JSON.stringify(dati[key]) + "|";
             }
-            return "regione_altre_localita";
+            return firma;
         }
 
-        function generaSafeId(citta) {
-            return citta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
+        // COSTRUISCE LA TABELLA (chiamata solo all'inizio o se ci sono nuove città)
+        function costruisciTabella() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = ""; // Svuota
+
+            for (const [regione, cittaBase] of Object.entries(datiViaggi)) {
+                let rId = generaSafeId(regione);
+                
+                // Intestazione Regione
+                tbody.insertAdjacentHTML('beforeend', `<tr id="hdr_${rId}"><td colspan="5" class="regione-header">${regione}</td></tr>`);
+                
+                // Uniamo città base + città extra della regione (se esistono in statoGlobale)
+                let cittaExtra = statoGlobale[`extra_${rId}`] || [];
+                
+                // Disegna città base
+                cittaBase.sort((a, b) => a.localeCompare(b)).forEach(c => appendiRigaCitta(tbody, c, rId, false));
+                
+                // Disegna città extra (con tasti modifica/elimina)
+                cittaExtra.forEach(c => appendiRigaCitta(tbody, c, rId, true));
+
+                // Riga per aggiungere
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="add-row">
+                        <td colspan="5">
+                            <div class="add-bar-region">
+                                <input type="text" id="input_${rId}" placeholder="Aggiungi una città in ${regione}...">
+                                <button onclick="aggiungiCitta('${rId}', '${regione}')">+</button>
+                            </div>
+                        </td>
+                    </tr>
+                `);
+            }
+            aggiornaSpunteEPunteggi(); // Riapplica i check
         }
 
-        function buildRowHTML(citta, idElementoTarget, isExtra = false) {
+        function appendiRigaCitta(tbody, citta, rId, isExtra) {
             let safeId = generaSafeId(citta);
-            if (document.getElementById(`row_${safeId}`)) return;
-
             let tastiAzione = isExtra ? `
                 <div class="actions-container">
-                    <button class="btn-action" onclick="modificaCitta('${citta}')" title="Modifica">✏️</button>
-                    <button class="btn-action" onclick="eliminaCitta('${citta}')" title="Elimina">🗑️</button>
+                    <button class="btn-action" onclick="modificaCitta('${rId}', '${citta}')" title="Rinomina">✏️</button>
+                    <button class="btn-action" onclick="eliminaCitta('${rId}', '${citta}')" title="Elimina">🗑️</button>
                 </div>
             ` : '';
 
-            let row = `
-                <tr id="row_${safeId}" class="${isExtra ? 'riga-extra' : ''}">
-                    <td class="col-citta" id="text_${safeId}">${citta} ${tastiAzione}</td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p1" onclick="salvaCambio('${safeId}', 'p1', this.checked)"></td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p2" onclick="salvaCambio('${safeId}', 'p2', this.checked)"></td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p3" onclick="salvaCambio('${safeId}', 'p3', this.checked)"></td>
-                    <td class="col-check"><input type="checkbox" id="${safeId}_p4" onclick="salvaCambio('${safeId}', 'p4', this.checked)"></td>
+            tbody.insertAdjacentHTML('beforeend', `
+                <tr id="row_${safeId}">
+                    <td class="col-citta">
+                        <span>${citta}</span>
+                        ${tastiAzione}
+                    </td>
+                    <td class="col-check"><input type="checkbox" id="${safeId}_p1" onclick="salvaCheck('${safeId}', 'p1', this.checked)"></td>
+                    <td class="col-check"><input type="checkbox" id="${safeId}_p2" onclick="salvaCheck('${safeId}', 'p2', this.checked)"></td>
+                    <td class="col-check"><input type="checkbox" id="${safeId}_p3" onclick="salvaCheck('${safeId}', 'p3', this.checked)"></td>
+                    <td class="col-check"><input type="checkbox" id="${safeId}_p4" onclick="salvaCheck('${safeId}', 'p4', this.checked)"></td>
                 </tr>
-            `;
-            
-            let targetRow = document.getElementById(idElementoTarget);
-            targetRow.insertAdjacentHTML('afterend', row);
+            `);
         }
 
-        async function caricaDatiDalCloud() {
-            if (isSaving) return; // Se stiamo salvando locali, congela il fetch per evitare sovrascritture brutali
-            try {
-                let risposta = await fetch(API_URL);
-                let nuoviDati = await risposta.json();
-                if (!nuoviDati || typeof nuoviDati !== 'object') nuoviDati = {};
-                
-                statoGlobale = nuoviDati;
-
-                // Sincronizza visivamente le righe extra aggiunte o rimosse dagli altri
-                document.querySelectorAll('.riga-extra').forEach(el => el.remove());
-                document.getElementById("regione_altre_localita").style.display = "none";
-
-                if (statoGlobale["_listaCittaExtra"]) {
-                    statoGlobale["_listaCittaExtra"].forEach(cittaNome => {
-                        let targetRegioneId = trovaRegioneDellaCitta(cittaNome);
-                        if (targetRegioneId === "regione_altre_localita") {
-                            document.getElementById("regione_altre_localita").style.display = "table-row";
-                        }
-                        buildRowHTML(cittaNome, targetRegioneId, true);
-                    });
-                }
-
-                aggiornaSchermata();
-            } catch (e) {
-                console.error("Errore sincro cloud:", e);
-            }
-        }
-
-        function aggiornaSchermata() {
+        // AGGIORNA SOLO I VALORI SENZA RICREARE L'HTML (evita di perdere il cursore)
+        function aggiornaSpunteEPunteggi() {
             let punteggi = { p1: 0, p2: 0, p3: 0, p4: 0 };
 
             document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
@@ -280,96 +255,136 @@
             document.getElementById('score-p4').innerText = punteggi.p4;
         }
 
-        function aggiungiNuovaCitta() {
-            let inputField = document.getElementById('nuova-citta-input');
+        // GESTORE SICURO DELLE MODIFICHE SUL CLOUD (Evita conflitti)
+        async function eseguiModificaSicura(modificaFn) {
+            document.getElementById('sync-status').innerText = "Salvataggio in corso...";
+            isSaving = true;
+            try {
+                // 1. Scarichiamo l'ultimissima versione per non sovrascrivere click altrui
+                let res = await fetch(API_URL);
+                let datiAggiornati = await res.json();
+                if(!datiAggiornati || typeof datiAggiornati !== 'object') datiAggiornati = {};
+                
+                // 2. Applichiamo la nostra modifica
+                modificaFn(datiAggiornati);
+                
+                // 3. Ricarichiamo online
+                await fetch(API_URL, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datiAggiornati)
+                });
+                
+                // 4. Aggiorniamo locale
+                statoGlobale = datiAggiornati;
+                document.getElementById('sync-status').innerText = "Sincronizzato ✔️";
+                
+                // Decidiamo se serve ricostruire tutta la tabella o solo le spunte
+                let nuovaFirma = generaFirmaStruttura(statoGlobale);
+                if (nuovaFirma !== ultimaFirmaStruttura) {
+                    ultimaFirmaStruttura = nuovaFirma;
+                    costruisciTabella();
+                } else {
+                    aggiornaSpunteEPunteggi();
+                }
+                
+            } catch (e) {
+                console.error("Errore Sync:", e);
+                document.getElementById('sync-status').innerText = "Errore di connessione ❌";
+            } finally {
+                isSaving = false;
+            }
+        }
+
+        // FUNZIONI UTENTE
+        function salvaCheck(cittaId, persona, checked) {
+            // Reazione immediata in locale
+            statoGlobale[`${cittaId}_${persona}`] = checked;
+            aggiornaSpunteEPunteggi();
+            
+            // Invio sicuro
+            eseguiModificaSicura((dati) => {
+                dati[`${cittaId}_${persona}`] = checked;
+            });
+        }
+
+        function aggiungiCitta(rId, nomeRegione) {
+            let inputField = document.getElementById(`input_${rId}`);
             let nomeCitta = inputField.value.trim();
             if (nomeCitta === "") return;
 
-            if (!statoGlobale["_listaCittaExtra"]) statoGlobale["_listaCittaExtra"] = [];
-            if (!statoGlobale["_listaCittaExtra"].includes(nomeCitta)) {
-                statoGlobale["_listaCittaExtra"].push(nomeCitta);
-            }
-
-            let targetRegioneId = trovaRegioneDellaCitta(nomeCitta);
-            if (targetRegioneId === "regione_altre_localita") {
-                document.getElementById("regione_altre_localita").style.display = "table-row";
-            }
-            buildRowHTML(nomeCitta, targetRegioneId, true);
-
-            inputField.value = "";
-            inviaStatoAlCloud();
-        }
-
-        function eliminaCitta(nomeCitta) {
-            if (!confirm(`Vuoi davvero eliminare "${nomeCitta}" dalla lista?`)) return;
-
-            if (statoGlobale["_listaCittaExtra"]) {
-                statoGlobale["_listaCittaExtra"] = statoGlobale["_listaCittaExtra"].filter(c => c !== nomeCitta);
-            }
-
-            let safeId = generaSafeId(nomeCitta);
-            delete statoGlobale[`${safeId}_p1`];
-            delete statoGlobale[`${safeId}_p2`];
-            delete statoGlobale[`${safeId}_p3`];
-            delete statoGlobale[`${safeId}_p4`];
-
-            let riga = document.getElementById(`row_${safeId}`);
-            if (riga) riga.remove();
-
-            inviaStatoAlCloud();
-        }
-
-        function modificaCitta(vecchioNome) {
-            let nuovoNome = prompt(`Modifica il nome della città:`, vecchioNome);
-            if (nuovoNome === null || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
-            nuovoNome = nuevoNome.trim();
-
-            if (statoGlobale["_listaCittaExtra"]) {
-                let index = statoGlobale["_listaCittaExtra"].indexOf(vecchioNome);
-                if (index !== -1) {
-                    statoGlobale["_listaCittaExtra"][index] = nuovoNome;
-                }
-            }
-
-            let vecchioSafeId = generaSafeId(vecchioNome);
-            let nuovoSafeId = generaSafeId(nuovoNome);
-
-            ['p1', 'p2', 'p3', 'p4'].forEach(p => {
-                if (statoGlobale[`${vecchioSafeId}_${p}`] !== undefined) {
-                    statoGlobale[`${nuovoSafeId}_${p}`] = statoGlobale[`${vecchioSafeId}_${p}`];
-                    delete statoGlobale[`${vecchioSafeId}_${p}`];
+            eseguiModificaSicura((dati) => {
+                if (!dati[`extra_${rId}`]) dati[`extra_${rId}`] = [];
+                if (!dati[`extra_${rId}`].includes(nomeCitta)) {
+                    dati[`extra_${rId}`].push(nomeCitta);
                 }
             });
-
-            inviaStatoAlCloud();
+            inputField.value = ""; // Pulisci input
         }
 
-        function salvaCambio(cittaId, persona, checked) {
-            let chiave = `${cittaId}_${persona}`;
-            statoGlobale[chiave] = checked;
-            aggiornaSchermata();
-            inviaStatoAlCloud();
+        function eliminaCitta(rId, nomeCitta) {
+            if (!confirm(`Vuoi davvero eliminare "${nomeCitta}"?`)) return;
+
+            eseguiModificaSicura((dati) => {
+                if (dati[`extra_${rId}`]) {
+                    dati[`extra_${rId}`] = dati[`extra_${rId}`].filter(c => c !== nomeCitta);
+                }
+                // Pulizia punteggi della città eliminata
+                let safeId = generaSafeId(nomeCitta);
+                ['p1', 'p2', 'p3', 'p4'].forEach(p => delete dati[`${safeId}_${p}`]);
+            });
         }
 
-        async function inviaStatoAlCloud() {
-            isSaving = true; // Attiva il blocco di sicurezza temporaneo
-            try {
-                // Sostituito in modo permanente POST con PUT per salvare in modo stabile su npoint
-                await fetch(API_URL, {
-                    method: "PUT", 
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(statoGlobale)
+        function modificaCitta(rId, vecchioNome) {
+            let nuovoNome = prompt(`Modifica il nome della città:`, vecchioNome);
+            if (!nuovoNome || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
+            nuovoNome = nuovoNome.trim();
+
+            eseguiModificaSicura((dati) => {
+                // Aggiorna nome nell'array
+                if (dati[`extra_${rId}`]) {
+                    let index = dati[`extra_${rId}`].indexOf(vecchioNome);
+                    if (index !== -1) dati[`extra_${rId}`][index] = nuovoNome;
+                }
+                // Trasferisci i punteggi dal vecchio ID al nuovo ID
+                let vecchioSafeId = generaSafeId(vecchioNome);
+                let nuovoSafeId = generaSafeId(nuovoNome);
+                ['p1', 'p2', 'p3', 'p4'].forEach(p => {
+                    if (dati[`${vecchioSafeId}_${p}`] !== undefined) {
+                        dati[`${nuovoSafeId}_${p}`] = dati[`${vecchioSafeId}_${p}`];
+                        delete dati[`${vecchioSafeId}_${p}`];
+                    }
                 });
+            });
+        }
+
+        // SINCRONIZZAZIONE PERIODICA (Caricamento Passivo)
+        async function caricaDatiDalCloud() {
+            if (isSaving) return; // Non interferire se un utente sta salvando
+            try {
+                let res = await fetch(API_URL);
+                let nuoviDati = await res.json();
+                if (!nuoviDati || typeof nuoviDati !== 'object') nuoviDati = {};
+                
+                statoGlobale = nuoviDati;
+                
+                let nuovaFirma = generaFirmaStruttura(statoGlobale);
+                if (nuovaFirma !== ultimaFirmaStruttura) {
+                    ultimaFirmaStruttura = nuovaFirma;
+                    costruisciTabella();
+                } else {
+                    aggiornaSpunteEPunteggi();
+                }
+                document.getElementById('sync-status').innerText = "Ultimo sync: " + new Date().toLocaleTimeString();
             } catch (e) {
-                console.error("Errore invio cloud:", e);
-            } finally {
-                isSaving = false; // Rilascia il blocco
+                console.error("Errore fetch passiva:", e);
             }
         }
 
-        // Avvio iniziale e controllo automatico modifiche ogni 5 secondi
-        caricaDatiDalCloud();
-        setInterval(caricaDatiDalCloud, 5000);
+        // Avvio
+        costruisciTabella(); // Setup iniziale struttura
+        caricaDatiDalCloud(); // Primo vero caricamento
+        setInterval(caricaDatiDalCloud, 4000); // Check ogni 4 secondi
     </script>
 </body>
 </html>
