@@ -53,7 +53,8 @@
     "La tavolata": "Sardegna",
     "Molata": "Sardegna",
     "Santa Teresa di Gallura": "Sardegna",
-    "Golfo aranci": "Sardegna"
+    "Golfo aranci": "Sardegna",
+    "La tavolara": "Sardegna"
   },
   "arzano_p1": true,
   "grado_p1": true,
@@ -177,5 +178,5 @@
   "budoni_p2": true,
   "golfo_aranci_p2": true,
   "la_maddalena_p2": true,
-  "la_tavolata_p2": true
+  "la_tavolara_p2": true
 }
