@@ -64,7 +64,8 @@
     "Vignola": "Sardegna",
     "Porto rotondo": "Sardegna",
     "San Pantaleo": "Sardegna",
-    "Rena majore": "Sardegna"
+    "Rena majore": "Sardegna",
+    "Porto qualtu": "Sardegna"
   },
   "arzano_p1": true,
   "grado_p1": true,
@@ -197,5 +198,6 @@
   "porto_taverna_p2": true,
   "santa_teresa_di_gallura_p2": true,
   "san_pantaleo_p2": true,
-  "rena_majore_p2": true
+  "rena_majore_p2": true,
+  "porto_rotondo_p2": true
 }
