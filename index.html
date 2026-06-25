@@ -155,13 +155,13 @@
 
     <script>
         // =======================================================
-        // CONFIGURAZIONE GITHUB (CAMBIA SOLO LE RIGHE QUI SOTTO)
+        // CONFIGURAZIONE GITHUB - GIÀ COMPILATA CON I TUOI DATI
         // =======================================================
         const GH_CONFIG = {
-            owner: "IL_TUO_NOME_UTENTE_GITHUB",   // Scrivi qui il tuo username di GitHub (es. "luca-rossi")
-            repo: "IL_NOME_DEL_TUO_REPOSITORY",    // Il nome del tuo repository (es. "viaggi-italia")
-            path: "dati.json",                    // Il file che conterrà i salvataggi
-            branch: "main"                        // Di solito main o master
+            owner: "marchesiniluca",   // Il tuo username di GitHub
+            repo: "citt--visitate",    // Il nome del tuo repository
+            path: "dati.json",         // Il file cloud con i salvataggi
+            branch: "main"             // Branch principale
         };
 
         // Recupera il token salvato nel browser per evitare di metterlo nel codice pubblico
@@ -370,7 +370,7 @@
         function modificaCitta(vecchioNome) {
             let nuovoNome = prompt(`Modifica il nome della città:`, vecchioNome);
             if (nuovoNome === null || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
-            nuovoNome = nuovoNome.trim();
+            nuovoNome = nuevoNome.trim();
 
             if (statoGlobale["_listaCittaExtra"]) {
                 let index = statoGlobale["_listaCittaExtra"].indexOf(vecchioNome);
