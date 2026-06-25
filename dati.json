@@ -11,5 +11,8 @@
   "teramo_p2": false,
   "sulmona_p2": false,
   "spoltore_p1": false,
-  "silvi_p1": true
+  "silvi_p1": true,
+  "_listaCittaExtra": [
+    "Bomporto"
+  ]
 }
