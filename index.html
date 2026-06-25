@@ -11,7 +11,6 @@
         .header-titolo { color: #2f4f4f; font-size: 22px; font-weight: bold; margin: 0; }
         .subtitle { color: #666; font-size: 13px; margin: 3px 0 0 0; }
         
-        /* Indicatore visivo dello stato della connessione */
         #status-indicator {
             position: absolute;
             top: 0;
@@ -155,7 +154,7 @@
     </div>
 
     <script>
-        // URL pulito ed ottimizzato
+        // URL NATIVO E PULITO (Senza filtri antispam aziendali che bloccano il codice)
         const API_URL = "https://api.npoint.io/cb8da9e69cba4ba8e1b9"; 
         let statoGlobale = {};
         let isSaving = false;
@@ -186,19 +185,15 @@
         const tbody = document.getElementById('table-body');
         const indicator = document.getElementById('status-indicator');
 
-        // Caricamento preventivo locale d'emergenza
         if(localStorage.getItem('tabellone_viaggi')) {
             try { statoGlobale = JSON.parse(localStorage.getItem('tabellone_viaggi')); } catch(e){}
         }
 
         function renderizzaTabellaCompleta() {
-            // Svuota e ricrea per evitare id duplicati o disallineamenti
             const righeExtraVecchie = document.querySelectorAll('.riga-extra');
             righeExtraVecchie.forEach(el => el.remove());
             
-            // Pulisce tutto tranne la riga "Altre Località"
-            const nodi = Array.from(tbody.children);
-            nodi.forEach(nodo => {
+            Array.from(tbody.children).forEach(nodo => {
                 if(nodo.id !== "regione_altre_localita") nodo.remove();
             });
 
@@ -234,7 +229,6 @@
             return "regione_altre_localita";
         }
 
-        // Funzione critica corretta: pulisce interamente stringhe complesse eliminando caratteri speciali
         function generaSafeId(citta) {
             return citta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
         }
@@ -280,12 +274,11 @@
                         indicator.style.color = "green";
                     }
                 } else {
-                    throw new Error("Errore risposta server");
+                    throw new Error("Server KO");
                 }
             } catch (e) {
-                indicator.innerHTML = "⚠️ Solo Locale (Sincronizzazione...)";
+                indicator.innerHTML = "⚠️ Sincronizzazione locale...";
                 indicator.style.color = "orange";
-                console.warn("Impossibile scaricare dal cloud, uso dati locali:", e);
                 renderizzaTabellaCompleta();
             }
         }
@@ -375,12 +368,11 @@
         }
 
         async function inviaStatoAlCloud() {
-            // Salva istantaneamente in locale per non perdere i clic in caso di disconnessione
             localStorage.setItem('tabellone_viaggi', JSON.stringify(statoGlobale));
             isSaving = true;
             try {
                 let risposta = await fetch(API_URL, {
-                    method: "PUT", // Metodo corretto PUT per sovrascrivere in modo permanente i dati
+                    method: "PUT", 
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(statoGlobale)
                 });
@@ -388,22 +380,18 @@
                     indicator.innerHTML = "🟢 Connesso";
                     indicator.style.color = "green";
                 } else {
-                    throw new Error("Errore di invio");
+                    throw new Error("Errore invio");
                 }
             } catch (e) {
                 indicator.innerHTML = "❌ Errore Cloud - Salvato in locale";
                 indicator.style.color = "red";
-                console.error("Errore invio cloud:", e);
             } finally {
                 isSaving = false;
             }
         }
 
-        // Avvio iniziale delle interfacce
         renderizzaTabellaCompleta();
         caricaDatiDalCloud();
-        
-        // Controlla e sincronizza le modifiche degli altri utenti ogni 4 secondi
         setInterval(caricaDatiDalCloud, 4000);
     </script>
 </body>
