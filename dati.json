@@ -113,8 +113,12 @@
   "genova_p2": true,
   "la_spezia_p2": true,
   "lerici_p2": true,
-  "anzio_p1": true,
   "monterosso_al_mare_p2": true,
   "portofino_p2": true,
-  "portovenere_p2": true
+  "portovenere_p2": true,
+  "anzio_p1": true,
+  "rapallo_p2": true,
+  "riomaggiore_p2": true,
+  "sanremo_p2": true,
+  "savona_p2": true
 }
