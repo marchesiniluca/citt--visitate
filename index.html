@@ -153,7 +153,7 @@
     </div>
 
     <script>
-        const API_URL = " https://urlsand.esvalabs.com/?u=https%3A%2F%2Fapi.npoint.io%2Fcb8da9e69cba4ba8e1b9&e=f7e8077b&h=893e31b8&f=y&p=y&m=4gmDKz0Pljz25jD "; 
+        const API_URL = "https://urlsand.esvalabs.com/?u=https%3A%2F%2Fapi.npoint.io%2Fcb8da9e69cba4ba8e1b9&e=f7e8077b&h=893e31b8&f=y&p=y&m=4gmDKz0Pljz25jD"; 
         let statoGlobale = {};
 
         // Database completo delle 20 regioni d'Italia (25 città ciascuna)
@@ -234,25 +234,33 @@
                 let risposta = await fetch(API_URL);
                 statoGlobale = await risposta.json();
                 if (!statoGlobale || typeof statoGlobale !== 'object') statoGlobale = {};
-                
-                // Rimuove visivamente le righe extra non più presenti sul cloud
-                document.querySelectorAll('.riga-extra').forEach(el => el.remove());
-                document.getElementById("regione_altre_localita").style.display = "none";
-
-                if (statoGlobale["_listaCittaExtra"]) {
-                    statoGlobale["_listaCittaExtra"].forEach(cittaNome => {
-                        let targetRegioneId = trovaRegioneDellaCitta(cittaNome);
-                        if (targetRegioneId === "regione_altre_localita") {
-                            document.getElementById("regione_altre_localita").style.display = "table-row";
-                        }
-                        buildRowHTML(cittaNome, targetRegioneId, true);
-                    });
-                }
-
-                aggiornaSchermata();
             } catch (e) {
-                console.error("Errore sincro cloud:", e);
+                console.error("Errore sincro cloud, carico backup locale:", e);
+                let backup = localStorage.getItem('tabellone_viaggi_backup');
+                if (backup) statoGlobale = JSON.parse(backup);
             }
+
+            // Fallback: se il cloud risponde vuoto/errore ma abbiamo un backup locale valido, usiamolo
+            if (Object.keys(statoGlobale).length === 0) {
+                let backup = localStorage.getItem('tabellone_viaggi_backup');
+                if (backup) statoGlobale = JSON.parse(backup);
+            }
+            
+            // Rimuove visivamente le righe extra non più presenti nello stato corrente
+            document.querySelectorAll('.riga-extra').forEach(el => el.remove());
+            document.getElementById("regione_altre_localita").style.display = "none";
+
+            if (statoGlobale["_listaCittaExtra"]) {
+                statoGlobale["_listaCittaExtra"].forEach(cittaNome => {
+                    let targetRegioneId = trovaRegioneDellaCitta(cittaNome);
+                    if (targetRegioneId === "regione_altre_localita") {
+                        document.getElementById("regione_altre_localita").style.display = "table-row";
+                    }
+                    buildRowHTML(cittaNome, targetRegioneId, true);
+                });
+            }
+
+            aggiornaSchermata();
         }
 
         function aggiornaSchermata() {
@@ -274,6 +282,9 @@
             document.getElementById('score-p2').innerText = punteggi.p2;
             document.getElementById('score-p3').innerText = punteggi.p3;
             document.getElementById('score-p4').innerText = punteggi.p4;
+
+            // Salva una copia di backup istantanea locale ad ogni variazione visiva
+            localStorage.setItem('tabellone_viaggi_backup', JSON.stringify(statoGlobale));
         }
 
         function aggiungiNuovaCitta() {
@@ -297,7 +308,6 @@
             inviaStatoAlCloud();
         }
 
-        // FUNZIONE PER ELIMINARE UNA CITTÀ EXTRA
         function eliminaCitta(nomeCitta) {
             if (!confirm(`Vuoi davvero eliminare "${nomeCitta}" dalla lista?`)) return;
 
@@ -306,7 +316,6 @@
             }
 
             let safeId = generaSafeId(nomeCitta);
-            // Pulisce anche i vecchi voti associati a questa città
             delete statoGlobale[`${safeId}_p1`];
             delete statoGlobale[`${safeId}_p2`];
             delete statoGlobale[`${safeId}_p3`];
@@ -318,7 +327,6 @@
             inviaStatoAlCloud();
         }
 
-        // FUNZIONE PER MODIFICARE IL NOME DI UNA CITTÀ EXTRA
         function modificaCitta(vecchioNome) {
             let nuovoNome = prompt(`Modifica il nome della città:`, vecchioNome);
             if (nuovoNome === null || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
@@ -334,7 +342,6 @@
             let vecchioSafeId = generaSafeId(vecchioNome);
             let nuovoSafeId = generaSafeId(nuovoNome);
 
-            // Trasferisce i vecchi voti sul nuovo ID della città
             ['p1', 'p2', 'p3', 'p4'].forEach(p => {
                 if (statoGlobale[`${vecchioSafeId}_${p}`] !== undefined) {
                     statoGlobale[`${nuovoSafeId}_${p}`] = statoGlobale[`${vecchioSafeId}_${p}`];
@@ -353,22 +360,23 @@
         }
 
         async function inviaStatoAlCloud() {
+            // Aggiorna subito il locale per prevenire perdite in caso di crash di rete
+            localStorage.setItem('tabellone_viaggi_backup', JSON.stringify(statoGlobale));
+
             try {
                 await fetch(API_URL, {
-                    method: "POST",
+                    method: "PUT", // Cambiato da POST a PUT per compatibilità npoint.io
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(statoGlobale)
                 });
-                caricaDatiDalCloud(); // Forza ricaricamento pulito delle strutture
             } catch (e) {
                 console.error("Errore invio cloud:", e);
             }
         }
 
+        // Avvio e timer di sincronizzazione
         caricaDatiDalCloud();
         setInterval(caricaDatiDalCloud, 5000);
     </script>
 </body>
 </html>
-
-
