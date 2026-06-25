@@ -131,7 +131,6 @@
             padding: 0 15px;
         }
 
-        /* Card per singola regione */
         .regione-card {
             background: var(--card-bg);
             border-radius: 12px;
@@ -153,7 +152,6 @@
             gap: 8px;
         }
         
-        /* Griglia delle intestazioni colonne finta (allineata con le righe) */
         .table-header-row {
             display: grid;
             grid-template-columns: 2fr repeat(4, 1fr);
@@ -167,7 +165,6 @@
         }
         .table-header-row div:first-child { text-align: left; }
 
-        /* Struttura a righe per le città */
         .citta-row {
             display: grid;
             grid-template-columns: 2fr repeat(4, 1fr);
@@ -183,14 +180,12 @@
         .col-citta { text-align: left; font-weight: 500; font-size: 14px; display: flex; align-items: center; justify-content: space-between; }
         .col-check { text-align: center; display: flex; justify-content: center; align-items: center; }
         
-        /* Checkbox personalizzati stilizzati */
         input[type="checkbox"] { 
             transform: scale(1.3); 
             cursor: pointer; 
             accent-color: var(--secondary-color);
         }
         
-        /* Colori checkbox specifici per persona al passaggio del mouse o attivi */
         .chk-p1 { accent-color: var(--p1-color) !important; }
         .chk-p2 { accent-color: var(--p2-color) !important; }
         .chk-p3 { accent-color: var(--p3-color) !important; }
@@ -278,8 +273,7 @@
         </div>
     </div>
 
-    <div class="main-content" id="regions-container">
-        </div>
+    <div class="main-content" id="regions-container"></div>
 
     <div class="add-city-bar">
         <input type="text" id="nuova-citta-input" placeholder="Aggiungi una nuova città personalizzata...">
@@ -287,9 +281,6 @@
     </div>
 
     <script>
-        // =======================================================
-        // CONFIGURAZIONE GITHUB
-        // =======================================================
         const GH_CONFIG = {
             owner: "marchesiniluca",   
             repo: "citt--visitate",    
@@ -305,7 +296,8 @@
             }
         }
 
-        const GITHUB_API_URL = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`;
+        const container = document.getElementById('regions-container');
+        const indicator = document.getElementById('status-indicator');
 
         let statoGlobale = {};
         let currentSha = null; 
@@ -333,9 +325,6 @@
             "Valle d'Aosta": ["Aosta", "Saint-Vincent", "Châtillon", "Sarre", "Pont-Saint-Martin", "Quart", "Saint-Christophe", "Gressan", "Courmayeur", "Donnas", "Brusson", "Gressoney-Saint-Jean", "Cogne", "Breuil-Cervinia", "Valtournenche", "Morgex", "La Salle", "Nus", "Fenis", "Verres", "Pre-Saint-Didier", "Arvier", "Bard", "Saint-Pierre", "Etroubles"],
             "Veneto": ["Venezia", "Verona", "Padova", "Vicenza", "Treviso", "Rovigo", "Chioggia", "Bassano del Grappa", "San Donà di Piave", "Schio", "Mire", "Conegliano", "Castelfranco Veneto", "Villafranca di Verona", "Belluno", "Feltre", "Cortina d'Ampezzo", "Jesolo", "Caorle", "Peschiera del Garda", "Lazise", "Bardolino", "Asolo", "Marostica", "Arqua Petrarca"]
         };
-
-        const container = document.getElementById('regions-container');
-        const indicator = document.getElementById('status-indicator');
 
         if(localStorage.getItem('tabellone_viaggi')) {
             try { statoGlobale = JSON.parse(localStorage.getItem('tabellone_viaggi')); } catch(e){}
@@ -413,7 +402,7 @@
             let nomeNormalizzato = nomeCitta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             for (const [regione, cittaList] of Object.entries(datiViaggi)) {
                 let trovato = cittaList.some(c => c.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === nomeNormalizzato);
-                if (trovato) return regione;
+                if (trovato) return region;
             }
             return "📌 Altre Località";
         }
@@ -425,7 +414,10 @@
         async function caricaDatiDaGitHub() {
             if (isSaving || !GITHUB_TOKEN) return;
             try {
-                let risposta = await fetch(GITHUB_API_URL, {
+                // Aggiungiamo un parametro casuale "?nocache=" alla fine dell'URL per forzare il telefono a scaricare i dati reali
+                const urlNocache = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}?nocache=${new Date().getTime()}`;
+                
+                let risposta = await fetch(urlNocache, {
                     headers: { "Authorization": `token ${GITHUB_TOKEN}` }
                 });
                 
@@ -572,6 +564,7 @@
             indicator.style.background = "#3b82f6";
             
             try {
+                const apiWriteUrl = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`;
                 let contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(statoGlobale, null, 2))));
                 let bodyPayload = {
                     message: "Aggiornamento tabellone viaggi via Web App",
@@ -583,7 +576,7 @@
                     bodyPayload.sha = currentSha;
                 }
 
-                let risposta = await fetch(GITHUB_API_URL, {
+                let risposta = await fetch(apiWriteUrl, {
                     method: "PUT", 
                     headers: { 
                         "Content-Type": "application/json",
@@ -610,7 +603,7 @@
 
         renderizzaTabellaCompleta();
         caricaDatiDaGitHub();
-        setInterval(caricaDatiDaGitHub, 6000);
+        setInterval(caricaDatiDaGitHub, 4000); // Controlla aggiornamenti ogni 4 secondi anziché 6
     </script>
 </body>
 </html>
