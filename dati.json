@@ -43,7 +43,8 @@
   "afragola_p1": false,
   "_mappaCittaExtraRegione": {
     "Arzano": "Campania",
-    "Ostia": "Lazio"
+    "Ostia": "Lazio",
+    "San Teodoro": "Sardegna"
   },
   "arzano_p1": true,
   "grado_p1": true,
