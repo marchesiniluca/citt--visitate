@@ -69,7 +69,7 @@
     "Mondello": "Sicilia",
     "Lipari": "Sicilia",
     "Panarea": "Sicilia",
-    "PerÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ²": "Trentino-Alto Adige",
+    "PerÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ²": "Trentino-Alto Adige",
     "Andato": "Trentino-Alto Adige",
     "Marilena": "Trentino-Alto Adige",
     "Bondi e": "Trentino-Alto Adige",
@@ -258,5 +258,6 @@
   "peschiera_del_garda_p2": true,
   "venezia_p2": true,
   "verona_p2": true,
-  "assisi_p2": true
+  "assisi_p2": true,
+  "tenno_p2": true
 }
