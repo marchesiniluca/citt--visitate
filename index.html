@@ -31,8 +31,12 @@
         }
         
         .header-container { 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center; 
-            padding: 25px 15px 15px 15px;
+            padding: 25px 15px;
             background: linear-gradient(135deg, var(--primary-color), #1a3333);
             color: white;
             position: relative;
@@ -43,8 +47,8 @@
         
         #status-indicator {
             position: absolute;
-            top: 15px;
-            right: 15px;
+            top: 22px;
+            right: 20px;
             font-size: 11px;
             font-weight: 600;
             padding: 6px 12px;
@@ -238,6 +242,11 @@
         .add-city-bar button:active { transform: scale(0.95); }
 
         @media (max-width: 768px) { 
+            #status-indicator {
+                position: static;
+                margin-top: 10px;
+                display: inline-block;
+            }
             .dashboard { gap: 8px; }
             .stat-score { font-size: 18px; }
             .stat-name { font-size: 12px; }
@@ -335,15 +344,12 @@
         function renderizzaTabellaCompleta() {
             container.innerHTML = "";
 
-            // Mappa temporanea per unire città fisse e città extra dell'utente sotto le rispettive regioni
             let mappaRegioniCitta = {};
-            
             for (const [regione, cittaList] of Object.entries(datiViaggi)) {
                 mappaRegioniCitta[regione] = [...cittaList];
             }
             mappaRegioniCitta["📌 Altre Località"] = [];
 
-            // Assegna le città extra alla regione corretta o ad Altre Località
             if (statoGlobale["_listaCittaExtra"]) {
                 statoGlobale["_listaCittaExtra"].forEach(cittaNome => {
                     let regioneTrovata = trovaNomeRegione(cittaNome);
@@ -351,14 +357,12 @@
                 });
             }
 
-            // Genera l'HTML strutturato per blocchi di Regioni
             for (const [regione, cittaList] of Object.entries(mappaRegioniCitta)) {
-                if (cittaList.length === 0) continue; // Salta Altre località se vuota
+                if (cittaList.length === 0) continue;
 
                 let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
                 let isExtraGroup = regione === "📌 Altre Località";
 
-                // Ordina alfabeticamente le città della regione
                 cittaList.sort((a, b) => a.localeCompare(b));
 
                 let cardHTML = `
@@ -409,7 +413,7 @@
             let nomeNormalizzato = nomeCitta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
             for (const [regione, cittaList] of Object.entries(datiViaggi)) {
                 let trovato = cittaList.some(c => c.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() === nomeNormalizzato);
-                if (trovato) return region;
+                if (trovato) return regione;
             }
             return "📌 Altre Località";
         }
@@ -489,7 +493,6 @@
                     }
                 });
 
-                // Se nessuna città della regione corrisponde alla ricerca, nasconde l'intera card
                 if (rigaVisibileNellaCard || query === "") {
                     card.style.display = 'block';
                 } else {
