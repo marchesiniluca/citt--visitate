@@ -120,7 +120,7 @@
 <body>
 
     <div class="header-titolo">✈️ Città Visitate d'Italia</div>
-    <div class="subtitle">Aggiornamento automatico e condiviso</div>
+    <div class="subtitle">Aggiornamento automatico e condiviso in tempo reale</div>
 
     <div class="top-sticky-container">
         <div class="dashboard">
@@ -153,7 +153,8 @@
     </div>
 
     <script>
-        const API_URL = "https://urlsand.esvalabs.com/?u=https%3A%2F%2Fapi.npoint.io%2Fcb8da9e69cba4ba8e1b9&e=f7e8077b&h=893e31b8&f=y&p=y&m=4gmDKz0Pljz25jD"; 
+        // Inserito il link pulito e diretto di npoint senza filtri di sicurezza bloccanti
+        const API_URL = "https://api.npoint.io/cb8da9e69cba4ba8e1b9"; 
         let statoGlobale = {};
 
         // Database completo delle 20 regioni d'Italia (25 città ciascuna)
@@ -203,7 +204,6 @@
             return citta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
         }
 
-        // Genera la riga HTML
         function buildRowHTML(citta, idElementoTarget, isExtra = false) {
             let safeId = generaSafeId(citta);
             if (document.getElementById(`row_${safeId}`)) return;
@@ -232,35 +232,29 @@
         async function caricaDatiDalCloud() {
             try {
                 let risposta = await fetch(API_URL);
-                statoGlobale = await risposta.json();
-                if (!statoGlobale || typeof statoGlobale !== 'object') statoGlobale = {};
+                let nuoviDati = await risposta.json();
+                if (!nuoviDati || typeof nuoviDati !== 'object') nuoviDati = {};
+                
+                statoGlobale = nuoviDati;
+
+                // Gestione dinamica delle città extra aggiunte dagli altri utenti
+                document.querySelectorAll('.riga-extra').forEach(el => el.remove());
+                document.getElementById("regione_altre_localita").style.display = "none";
+
+                if (statoGlobale["_listaCittaExtra"]) {
+                    statoGlobale["_listaCittaExtra"].forEach(cittaNome => {
+                        let targetRegioneId = trovaRegioneDellaCitta(cittaNome);
+                        if (targetRegioneId === "regione_altre_localita") {
+                            document.getElementById("regione_altre_localita").style.display = "table-row";
+                        }
+                        buildRowHTML(cittaNome, targetRegioneId, true);
+                    });
+                }
+
+                aggiornaSchermata();
             } catch (e) {
-                console.error("Errore sincro cloud, carico backup locale:", e);
-                let backup = localStorage.getItem('tabellone_viaggi_backup');
-                if (backup) statoGlobale = JSON.parse(backup);
+                console.error("Errore sincro cloud:", e);
             }
-
-            // Fallback: se il cloud risponde vuoto/errore ma abbiamo un backup locale valido, usiamolo
-            if (Object.keys(statoGlobale).length === 0) {
-                let backup = localStorage.getItem('tabellone_viaggi_backup');
-                if (backup) statoGlobale = JSON.parse(backup);
-            }
-            
-            // Rimuove visivamente le righe extra non più presenti nello stato corrente
-            document.querySelectorAll('.riga-extra').forEach(el => el.remove());
-            document.getElementById("regione_altre_localita").style.display = "none";
-
-            if (statoGlobale["_listaCittaExtra"]) {
-                statoGlobale["_listaCittaExtra"].forEach(cittaNome => {
-                    let targetRegioneId = trovaRegioneDellaCitta(cittaNome);
-                    if (targetRegioneId === "regione_altre_localita") {
-                        document.getElementById("regione_altre_localita").style.display = "table-row";
-                    }
-                    buildRowHTML(cittaNome, targetRegioneId, true);
-                });
-            }
-
-            aggiornaSchermata();
         }
 
         function aggiornaSchermata() {
@@ -282,9 +276,6 @@
             document.getElementById('score-p2').innerText = punteggi.p2;
             document.getElementById('score-p3').innerText = punteggi.p3;
             document.getElementById('score-p4').innerText = punteggi.p4;
-
-            // Salva una copia di backup istantanea locale ad ogni variazione visiva
-            localStorage.setItem('tabellone_viaggi_backup', JSON.stringify(statoGlobale));
         }
 
         function aggiungiNuovaCitta() {
@@ -293,7 +284,6 @@
             if (nomeCitta === "") return;
 
             if (!statoGlobale["_listaCittaExtra"]) statoGlobale["_listaCittaExtra"] = [];
-            
             if (!statoGlobale["_listaCittaExtra"].includes(nomeCitta)) {
                 statoGlobale["_listaCittaExtra"].push(nomeCitta);
             }
@@ -330,7 +320,7 @@
         function modificaCitta(vecchioNome) {
             let nuovoNome = prompt(`Modifica il nome della città:`, vecchioNome);
             if (nuovoNome === null || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
-            nuovoNome = nuovoNome.trim();
+            nuovoNome = nuevoNome.trim();
 
             if (statoGlobale["_listaCittaExtra"]) {
                 let index = statoGlobale["_listaCittaExtra"].indexOf(vecchioNome);
@@ -360,12 +350,10 @@
         }
 
         async function inviaStatoAlCloud() {
-            // Aggiorna subito il locale per prevenire perdite in caso di crash di rete
-            localStorage.setItem('tabellone_viaggi_backup', JSON.stringify(statoGlobale));
-
             try {
+                // Utilizza il metodo PUT per salvare correttamente su npoint.io
                 await fetch(API_URL, {
-                    method: "PUT", // Cambiato da POST a PUT per compatibilità npoint.io
+                    method: "PUT", 
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(statoGlobale)
                 });
@@ -374,7 +362,7 @@
             }
         }
 
-        // Avvio e timer di sincronizzazione
+        // Avvio e controllo automatico modifiche ogni 5 secondi per tutti gli utenti
         caricaDatiDalCloud();
         setInterval(caricaDatiDalCloud, 5000);
     </script>
