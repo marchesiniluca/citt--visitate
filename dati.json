@@ -42,7 +42,8 @@
   "fidenza_p1": true,
   "afragola_p1": false,
   "_mappaCittaExtraRegione": {
-    "Arzano": "Campania"
+    "Arzano": "Campania",
+    "Ostia": "Lazio"
   },
   "arzano_p1": true,
   "grado_p1": true,
