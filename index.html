@@ -3,825 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tabellone Viaggi Italia v2</title>
+    <title>Tabellone Viaggi Italia</title>
     <style>
         :root {
-            --primary-color: #2f4f4f;
-            --secondary-color: #008b8b;
-            --accent-color: #e0eeee;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --text-light: #666666;
-            --border-color: #eef2f2;
-            
-            --p1-color: #3b82f6; /* Luca - Blu */
-            --p2-color: #ec4899; /* Elena - Rosa */
-            --p3-color: #10b981; /* Alessia - Verde */
-            --p4-color: #f59e0b; /* Filippo - Arancione */
+            --primary-color: #2f4f4f; --secondary-color: #008b8b; --bg-color: #f4f7f6; --card-bg: #ffffff; --text-color: #333333;
+            --p1-color: #3b82f6; --p2-color: #ec4899; --p3-color: #10b981; --p4-color: #f59e0b;
         }
-
-        body { 
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            background-color: var(--bg-color); 
-            margin: 0; 
-            padding: 0 0 40px 0; 
-            color: var(--text-color);
-            line-height: 1.5;
-            user-select: none;
-        }
-        
-        .header-container { 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center; 
-            padding: 25px 15px;
-            background: linear-gradient(135deg, var(--primary-color), #1a3333);
-            color: white;
-            position: relative;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .header-titolo { font-size: 26px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
-        .subtitle { color: #b2cece; font-size: 13px; margin: 6px 0 0 0; font-weight: 300; }
-        
-        #status-indicator {
-            position: absolute;
-            top: 22px;
-            right: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(4px);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .user-controls {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            align-items: center;
-        }
-
-        #user-badge {
-            font-size: 12px;
-            padding: 4px 12px;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.2);
-            cursor: pointer;
-            border: 1px dashed rgba(255,255,255,0.4);
-        }
-
-        #token-reset-btn {
-            font-size: 11px;
-            padding: 4px 10px;
-            border-radius: 12px;
-            background: rgba(239, 68, 68, 0.2);
-            color: #fca5a5;
-            cursor: pointer;
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            transition: background 0.2s;
-        }
-        #token-reset-btn:hover {
-            background: rgba(239, 68, 68, 0.4);
-        }
-        
-        .top-sticky-container {
-            position: sticky;
-            top: 0;
-            background-color: rgba(244, 247, 246, 0.95);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            padding: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
-            border-bottom: 1px solid rgba(0,0,0,0.02);
-        }
-
-        .dashboard { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 12px; 
-            max-width: 1200px;
-            margin: 0 auto 10px auto;
-        }
-        .stat-box { 
-            background: var(--card-bg); 
-            padding: 10px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); 
-            border: 1px solid var(--border-color);
-            position: relative;
-            overflow: hidden;
-            text-align: center;
-            cursor: pointer;
-        }
-        .stat-box.p1::before { background-color: var(--p1-color); }
-        .stat-box.p2::before { background-color: var(--p2-color); }
-        .stat-box.p3::before { background-color: var(--p3-color); }
-        .stat-box.p4::before { background-color: var(--p4-color); }
-        
-        .stat-box.active-user {
-            box-shadow: 0 0 0 2px var(--text-color);
-            background-color: #f0fdf4;
-        }
-
-        .stat-name { font-weight: 600; color: var(--primary-color); font-size: 14px; }
-        .stat-score { font-size: 20px; font-weight: 700; margin-top: 2px; }
-        .stat-box.p1 .stat-score { color: var(--p1-color); }
-        .stat-box.p2 .stat-score { color: var(--p2-color); }
-        .stat-box.p3 .stat-score { color: var(--p3-color); }
-        .stat-box.p4 .stat-score { color: var(--p4-color); }
-
-        .progress-container {
-            max-width: 1200px;
-            margin: 0 auto 12px auto;
-            background: #e2e8f0;
-            border-radius: 6px;
-            height: 6px;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--secondary-color), #10b981);
-            width: 0%;
-            transition: width 0.4s ease;
-        }
-
-        .search-bar-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            gap: 10px;
-        }
-        .search-input {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            font-size: 14px;
-            outline: none;
-            background: white;
-        }
-        .btn-toggle-all {
-            background: #e2e8f0;
-            border: none;
-            padding: 0 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            color: var(--primary-color);
-        }
-        
-        .main-content {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 15px;
-        }
-
-        .regione-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            border: 1px solid var(--border-color);
-            margin-bottom: 25px;
-            overflow: hidden;
-            transition: all 0.2s ease;
-        }
-
-        .regione-header { 
-            background-color: #f8faf9; 
-            font-weight: 700; 
-            color: var(--primary-color); 
-            padding: 14px 20px; 
-            font-size: 16px; 
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-        }
-        .regione-header:hover { background-color: #f1f5f4; }
-        .regione-header-left { display: flex; align-items: center; gap: 8px; }
-        .regione-badge { font-size: 11px; background: #e2e8f0; padding: 2px 8px; border-radius: 10px; color: var(--text-light); }
-
-        .card-content { transition: max-height 0.3s ease-out; overflow: hidden; }
-        .regione-card.collapsed .card-content { display: none; }
-        .regione-card.collapsed { margin-bottom: 12px; }
-
-        .table-header-row {
-            display: grid;
-            grid-template-columns: 2fr repeat(4, 1fr);
-            padding: 10px 20px;
-            background: #f1f5f5;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-light);
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .table-header-row div:first-child { text-align: left; }
-
-        .citta-row {
-            display: grid;
-            grid-template-columns: 2fr repeat(4, 1fr);
-            align-items: center;
-            padding: 12px 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .citta-row:nth-child(even) { background-color: #fbfdfd; }
-        .citta-row:hover { background-color: #f4f8f8; }
-        
-        .col-citta { text-align: left; font-weight: 500; font-size: 14px; display: flex; align-items: center; justify-content: space-between; }
-        .col-check { text-align: center; display: flex; justify-content: center; align-items: center; height: 100%; width: 100%; }
-        
-        .my-column-highlight { background-color: rgba(0, 139, 139, 0.04); }
-
-        input[type="checkbox"] { 
-            transform: scale(1.3); 
-            cursor: pointer; 
-            accent-color: var(--secondary-color);
-        }
-        input[type="checkbox"]:disabled { opacity: 0.4; cursor: not-allowed; transform: scale(1.1); }
-        
-        .chk-p1 { accent-color: var(--p1-color) !important; }
-        .chk-p2 { accent-color: var(--p2-color) !important; }
-        .chk-p3 { accent-color: var(--p3-color) !important; }
-        .chk-p4 { accent-color: var(--p4-color) !important; }
-
-        .actions-container { display: flex; gap: 4px; opacity: 0.3; transition: opacity 0.2s; }
-        .citta-row:hover .actions-container { opacity: 1; }
-        .btn-action { background: none; border: none; cursor: pointer; padding: 2px; font-size: 12px; }
-        
-        .regione-add-row {
-            display: flex;
-            gap: 10px;
-            padding: 12px 20px;
-            background-color: #fafbfc;
-            border-top: 1px dashed var(--border-color);
-        }
-        .regione-add-row input {
-            flex: 1;
-            padding: 8px 14px;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            font-size: 13px;
-            outline: none;
-        }
-        .regione-add-row button {
-            background: var(--secondary-color);
-            color: white;
-            border: none;
-            padding: 0 16px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .row-saving-flash { animation: flashGreen 0.6s ease; }
-        @keyframes flashGreen {
-            0% { background-color: transparent; }
-            50% { background-color: rgba(16, 185, 129, 0.2); }
-            100% { background-color: transparent; }
-        }
-
-        @media (max-width: 768px) { 
-            #status-indicator { position: static; margin-top: 10px; display: inline-block; }
-            .dashboard { gap: 6px; }
-            .stat-score { font-size: 16px; }
-            .stat-name { font-size: 11px; }
-            .table-header-row, .citta-row { padding: 10px 5px; font-size: 11px; grid-template-columns: 1.5fr repeat(4, 1fr); }
-            .col-citta { font-size: 12px; flex-direction: column; align-items: flex-start; }
-            .actions-container { opacity: 1; margin-top: 4px; }
-            input[type="checkbox"] { transform: scale(1.1); }
-            .regione-add-row { padding: 10px; }
-            .user-controls { flex-direction: column; gap: 5px; }
-        }
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0 0 40px 0; color: var(--text-color); user-select: none; }
+        .header-container { text-align: center; padding: 25px 15px; background: linear-gradient(135deg, var(--primary-color), #1a3333); color: white; position: relative; }
+        .header-titolo { font-size: 26px; font-weight: 700; margin: 0; }
+        #status-indicator { position: absolute; top: 22px; right: 20px; font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: 20px; background: rgba(255, 255, 255, 0.15); color: white; }
+        .user-controls { display: flex; gap: 10px; margin-top: 10px; justify-content: center; }
+        #user-badge, #token-reset-btn { font-size: 12px; padding: 4px 12px; border-radius: 12px; cursor: pointer; background: rgba(255,255,255,0.2); border: 1px dashed rgba(255,255,255,0.4); color: white; }
+        #token-reset-btn { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .top-sticky-container { position: sticky; top: 0; background-color: rgba(244, 247, 246, 0.95); backdrop-filter: blur(8px); z-index: 1000; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.04); }
+        .dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 1200px; margin: 0 auto; }
+        .stat-box { background: var(--card-bg); padding: 10px; border-radius: 12px; border: 1px solid #eef2f2; text-align: center; cursor: pointer; }
+        .stat-box.active-user { box-shadow: 0 0 0 2px var(--text-color); background-color: #f0fdf4; }
+        .stat-name { font-weight: 600; font-size: 14px; }
+        .stat-score { font-size: 20px; font-weight: 700; }
+        .main-content { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        .regione-card { background: var(--card-bg); border-radius: 12px; border: 1px solid #eef2f2; margin-bottom: 25px; overflow: hidden; }
+        .regione-header { background-color: #f8faf9; font-weight: 700; padding: 14px 20px; display: flex; justify-content: space-between; cursor: pointer; }
+        .table-header-row, .citta-row { display: grid; grid-template-columns: 2fr repeat(4, 1fr); padding: 10px 20px; text-align: center; border-bottom: 1px solid #eef2f2; }
+        .table-header-row div:first-child, .col-citta { text-align: left; }
+        .col-citta { font-weight: 500; font-size: 14px; }
+        input[type="checkbox"] { transform: scale(1.3); cursor: pointer; }
+        input[type="checkbox"]:disabled { opacity: 0.4; }
     </style>
 </head>
 <body>
 
     <div class="header-container">
         <div class="header-titolo">✈️ Città Visitate d'Italia</div>
-        <div class="subtitle">Tabellone Condiviso e Sincronizzato</div>
         <div id="status-indicator">⏳ Avvio...</div>
         <div class="user-controls">
-            <div id="user-badge" onclick="cambiaUtenteAttivo()">👤 Accesso come: <strong id="current-user-label">Seleziona...</strong> (Clicca per cambiare)</div>
-            <div id="token-reset-btn" onclick="resettaToken()">🔑 Cambia Token GitHub</div>
+            <div id="user-badge" onclick="cambiaUtenteAttivo()">👤 Utente: <strong id="current-user-label">Luca</strong></div>
+            <div id="token-reset-btn" onclick="resettaToken()">🔑 Cambia Token</div>
         </div>
     </div>
 
     <div class="top-sticky-container">
         <div class="dashboard">
-            <div class="stat-box p1" id="box-p1" onclick="selezionaUtenteCard('p1')"><div class="stat-name">Luca</div><div class="stat-score" id="score-p1">0</div></div>
-            <div class="stat-box p2" id="box-p2" onclick="selezionaUtenteCard('p2')"><div class="stat-name">Elena</div><div class="stat-score" id="score-p2">0</div></div>
-            <div class="stat-box p3" id="box-p3" onclick="selezionaUtenteCard('p3')"><div class="stat-name">Alessia</div><div class="stat-score" id="score-p3">0</div></div>
-            <div class="stat-box p4" id="box-p4" onclick="selezionaUtenteCard('p4')"><div class="stat-name">Filippo</div><div class="stat-score" id="score-p4">0</div></div>
-        </div>
-
-        <div class="progress-container">
-            <div class="progress-bar" id="total-progress"></div>
-        </div>
-
-        <div class="search-bar-container">
-            <input type="text" id="search-input" class="search-input" placeholder="🔍 Cerca una città..." oninput="filtraCitta()">
-            <button class="btn-toggle-all" onclick="toggleTutteRegioni(true)">▲ Chiudi tutto</button>
-            <button class="btn-toggle-all" onclick="toggleTutteRegioni(false)">▼ Apri tutto</button>
+            <div class="stat-box" id="box-p1" onclick="selezionaUtenteCard('p1')"><div class="stat-name" style="color:var(--p1-color)">Luca</div><div class="stat-score" id="score-p1">0</div></div>
+            <div class="stat-box" id="box-p2" onclick="selezionaUtenteCard('p2')"><div class="stat-name" style="color:var(--p2-color)">Elena</div><div class="stat-score" id="score-p2">0</div></div>
+            <div class="stat-box" id="box-p3" onclick="selezionaUtenteCard('p3')"><div class="stat-name" style="color:var(--p3-color)">Alessia</div><div class="stat-score" id="score-p3">0</div></div>
+            <div class="stat-box" id="box-p4" onclick="selezionaUtenteCard('p4')"><div class="stat-name" style="color:var(--p4-color)">Filippo</div><div class="stat-score" id="score-p4">0</div></div>
         </div>
     </div>
 
     <div class="main-content" id="regions-container"></div>
 
     <script>
-        const GH_CONFIG = {
-            owner: "marchesiniluca",   
-            repo: "citt--visitate",    // Mantenuto con due trattini come da tua immagine
-            path: "dati.json",         
-            branch: "main"             
-        };
-
-        let GITHUB_TOKEN = localStorage.getItem('gh_travel_token');
-        if (!GITHUB_TOKEN) {
-            richiediToken();
-        }
-
-        function richiediToken() {
-            let token = prompt("Inserisci il tuo GitHub Token (ghp_...):\n(Verrà salvato sul tuo browser)");
-            if (token) {
-                GITHUB_TOKEN = token.trim();
-                localStorage.setItem('gh_travel_token', GITHUB_TOKEN);
-            }
-        }
-
-        function resettaToken() {
-            let conferma = confirm("Vuoi inserire un nuovo token?");
-            if (conferma) {
-                localStorage.removeItem('gh_travel_token');
-                richiediToken();
-                caricaDatiDaGitHub(true);
-            }
-        }
-
-        let UTENTE_ATTIVO = localStorage.getItem('gh_travel_user'); 
-        if (!UTENTE_ATTIVO) {
-            scegliUtenteIniziale();
-        }
-
-        const container = document.getElementById('regions-container');
-        const indicator = document.getElementById('status-indicator');
-
+        const GH_CONFIG = { owner: "marchesiniluca", repo: "citt--visitate", path: "dati.json", branch: "main" };
+        let GITHUB_TOKEN = localStorage.getItem('gh_travel_token') || "";
+        let UTENTE_ATTIVO = localStorage.getItem('gh_travel_user') || "p1";
         let statoGlobale = {};
-        let currentSha = null; 
+        let currentSha = null;
         let isSaving = false;
-        let statoCollassatoRegioni = JSON.parse(localStorage.getItem('regioni_collassate') || '{}');
 
         const datiViaggi = {
-            "Abruzzo": ["L'Aquila", "Pescara", "Chieti", "Teramo", "Montesilvano", "Avezzano", "Vasto", "Lanciano", "Sulmona", "Roseto degli Abruzzi", "Ortona", "Francavilla al Mare", "Giulianova", "San Salvo", "Spoltore", "Alba Adriatica", "Atri", "Martinsicuro", "Silvi", "Pineto", "Pescasseroli", "Roccaraso", "Scanno", "Santo Stefano di Sessanio", "Castelli"],
-            "Basilicata": ["Potenza", "Matera", "Melfi", "Pisticci", "Lavello", "Rionero in Vulture", "Lauria", "Bernalda", "Venosa", "Avigliano", "Montescaglioso", "Ferrandina", "Maratea", "Scanzano Jonico", "Policoro", "Tursi", "Lagonegro", "Senise", "Rotonda", "Viggiano", "Genzano di Lucania", "Acerenza", "Castelmezzano", "Pietrapertosa", "Aliano"],
-            "Calabria": ["Catanzaro", "Reggio Calabria", "Cosenza", "Crotone", "Lamezia Terme", "Vibo Valentia", "Rossano", "Corigliano Calabro", "Rende", "Castrovillari", "Acri", "Palmi", "Soverato", "Tropea", "Gioia Tauro", "Scalea", "Amantea", "Paola", "Locri", "Siderno", "Scilla", "Pizzo", "Diamante", "Gerace", "Stilo"],
-            "Campania": ["Napoli", "Salerno", "Caserta", "Benevento", "Avellino", "Giugliano in Campania", "Torre del Greco", "Pozzuoli", "Aversa", "Battipaglia", "Cava de' Tirreni", "Scafati", "Casoria", "Castellammare di Stabia", "Acerra", "Ercolano", "Marano di Napoli", "Portici", "Afragola", "Sorrento", "Amalfi", "Positano", "Capri", "Ischia", "Pompei"],
-            "Emilia-Romagna": ["Bologna", "Parma", "Modena", "Reggio Emilia", "Ravenna", "Rimini", "Ferrara", "Forlì", "Piacenza", "Cesena", "Imola", "Faenza", "Carpi", "Sassuolo", "Riccione", "Cattolica", "Cesenatico", "Lugo", "Fidenza", "Cento", "Comacchio", "Bellaria-Igea Marina", "Maranello", "Bobbio", "Brisighella"],
-            "Friuli-Venezia Giulia": ["Trieste", "Udine", "Pordenone", "Gorizia", "Monfalcone", "Sacile", "Cordenons", "Codroipo", "Porcia", "Cervignano del Friuli", "Latisana", "Fontanafredda", "Spilimbergo", "Fiume Veneto", "Grado", "Lignano Sabbiadoro", "San Daniele del Friuli", "Palmanova", "Aquileia", "Tarvisio", "Cividale del Friuli", "Gemona del Friuli", "Tolmezzo", "Maniago", "Venzone"],
-            "Lazio": ["Roma", "Latina", "Viterbo", "Rieti", "Frosinone", "Guidonia Montecelio", "Fiumicino", "Aprilia", "Pomezia", "Anzio", "Tivoli", "Velletri", "Civitavecchia", "Nettuno", "Terracina", "Formia", "Fondia", "Marino", "Frascati", "Sabaudia", "Sperlonga", "Gaeta", "Tuscania", "Tarquinia", "Subiaco"],
-            "Liguria": ["Genova", "La Spezia", "Savona", "Sanremo", "Imperia", "Rapallo", "Chiavari", "Ventimiglia", "Albenga", "Sarzana", "Sestri Levante", "Taggia", "Varazze", "Lavagna", "Alassio", "Ceriale", "Loano", "Finale Ligure", "Portofino", "Camogli", "Lerici", "Vernazza", "Monterosso al Mare", "Riomaggiore", "Portovenere"],
-            "Lombardia": ["Milano", "Brescia", "Bergamo", "Monza", "Como", "Varese", "Pavia", "Cremona", "Mantova", "Lecco", "Lodi", "Sondrio", "Busto Arsizio", "Sesto San Giovanni", "Cinicello Balsamo", "Vigevano", "Legnano", "Gallarate", "Rho", "Saronno", "Sirmione", "Bellagio", "Crema", "Livigno"],
-            "Marche": ["Ancona", "Pesaro", "Fano", "Ascoli Piceno", "Macerata", "Civitanova Marche", "Senigallia", "Jesi", "San Benedetto del Tronto", "Fabriano", "Porto Sant'Elpidio", "Recanati", "Tolentino", "Fermo", "Osimo", "Falconara Marittima", "Urbino", "Gradara", "Loreto", "Corinaldo", "Camerino", "San Leo", "Grottammare", "Offida", "Mondavio"],
-            "Molise": ["Campobasso", "Isernia", "Termoli", "Venafro", "Bojano", "Campomarino", "Larino", "Montenero di Bisaccia", "Agnone", "Riccia", "Guglionesi", "Trivento", "Frosolone", "Scapoli", "Sepino", "Fornelli", "Castel San Vincenzo", "Bagnoli del Trigno", "Pesco Pennataro", "Capracotta", "Roccamandolfi", "Ferrazzano", "Petrella Tifernina", "Gildone", "Guardialfiera"],
-            "Piemonte": ["Torino", "Novara", "Alessandria", "Asti", "Cuneo", "Moncalieri", "Collegno", "Rivoli", "Vercelli", "Biella", "Alba", "Bra", "Verbania", "Nichelino", "Settimo Torinese", "Venaria Reale", "Chieri", "Casale Monferrato", "Pinerolo", "Ivrea", "Domodossola", "Arona", "Stresa", "Susa", "Saluzzo"],
-            "Puglia": ["Bari", "Taranto", "Foggia", "Lecce", "Andria", "Barletta", "Brindisi", "Altamura", "Molfetta", "Manfredonia", "Cerignola", "Bitonto", "San Severo", "Bisceglie", "Trani", "Gallipoli", "Otranto", "Alberobello", "Polignano a Mare", "Monopoli", "Ostuni", "Vieste", "San Giovanni Rotondo", "Peschici", "Santa Maria di Leuca"],
-            "Sardegna": ["Cagliari", "Sassari", "Quartu Sant'Elena", "Olbia", "Alghero", "Nuoro", "Oristano", "Carbonia", "Selargius", "Iglesias", "Assemini", "Porto Torres", "Sestu", "Capoterra", "Monserrato", "Siniscola", "Tortolì", "Arzachena", "Bosa", "Castelsardo", "Carloforte", "Villasimius", "Pula", "Orgosolo", "Stintino"],
-            "Sicilia": ["Palermo", "Catania", "Messina", "Siracusa", "Marsala", "Gela", "Ragusa", "Trapani", "Caltanissetta", "Agrigento", "Bagheria", "Acireale", "Modica", "Mazara del Vallo", "Misterbianco", "Paternò", "Castelvetrano", "Augusta", "Taormina", "Cefalù", "Noto", "San Vito Lo Capo", "Erice", "Monreale", "Favignana"],
-            "Toscana": ["Firenze", "Prato", "Livorno", "Arezzo", "Pistoia", "Pisa", "Lucca", "Grosseto", "Massa", "Siena", "Carrara", "Viareggio", "Scandicci", "Sesto Fiorentino", "Empoli", "Capannori", "Cascina", "Piombino", "San Gimignano", "Volterra", "Montepulciano", "Cortona", "Forte dei Marmi", "Portoferraio"],
-            "Trentino-Alto Adige": ["Trento", "Bolzano", "Rovereto", "Merano", "Bressanone", "Pergine Valsugana", "Laives", "Arco", "Riva del Garda", "Brunico", "Appiano sulla Strada del Vino", "Lana", "Caldaro sulla Strada del Vino", "Renon", "Vipiteno", "Ortisei", "Cavalese", "Canazei", "Pinzolo", "Madonna di Campiglio", "Predazzo", "Mezzolombardo", "Borgo Valsugana", "Cles", "Levico Terme"],
-            "Umbria": ["Perugia", "Terni", "Foligno", "Città di Castello", "Spoleto", "Gubbio", "Assisi", "Todi", "Orvieto", "Narni", "Bastia Umbra", "Marsciano", "Corciano", "Umbertide", "Castiglione del Lago", "Gualdo Tadino", "Amelia", "Spello", "Deruta", "Norcia", "Cascia", "Monteleone di Spoleto", "Panicale", "Bevagna", "Trevi"],
-            "Valle d'Aosta": ["Aosta", "Saint-Vincent", "Châtillon", "Sarre", "Pont-Saint-Martin", "Quart", "Saint-Christophe", "Gressan", "Courmayeur", "Donnas", "Brusson", "Gressoney-Saint-Jean", "Cogne", "Breuil-Cervinia", "Valtournenche", "Morgex", "La Salle", "Nus", "Fenis", "Verres", "Pre-Saint-Didier", "Arvier", "Bard", "Saint-Pierre", "Etroubles"],
-            "Veneto": ["Venezia", "Verona", "Padova", "Vicenza", "Treviso", "Rovigo", "Chioggia", "Bassano del Grappa", "San Donà di Piave", "Schio", "Mire", "Conegliano", "Castelfranco Veneto", "Villafranca di Verona", "Belluno", "Feltre", "Cortina d'Ampezzo", "Jesolo", "Caorle", "Peschiera del Garda", "Lazise", "Bardolino", "Asolo", "Marostica", "Arqua Petrarca"],
-            "📌 Altre Località": []
+            "Abruzzo": ["L'Aquila", "Pescara", "Chieti", "Teramo"],
+            "Emilia-Romagna": ["Bologna", "Parma", "Modena", "Reggio Emilia", "Ravenna", "Rimini"],
+            "Lazio": ["Roma", "Latina", "Viterbo", "Rieti"],
+            "Lombardia": ["Milano", "Brescia", "Bergamo", "Como", "Varese"],
+            "Toscana": ["Firenze", "Pisa", "Lucca", "Siena"],
+            "Veneto": ["Venezia", "Verona", "Padova", "Vicenza", "Treviso"]
         };
 
-        const mappaNomiUtenti = { p1: "Luca", p2: "Elena", p3: "Alessia", p4: "Filippo" };
+        const mappaNomi = { p1: "Luca", p2: "Elena", p3: "Alessia", p4: "Filippo" };
 
-        function scegliUtenteIniziale() {
-            let res = prompt("Chi sei? Scrivi il numero corrispettivo:\n1 per Luca\n2 per Elena\n3 per Alessia\n4 per Filippo");
-            if (res === "1") UTENTE_ATTIVO = "p1";
-            else if (res === "2") UTENTE_ATTIVO = "p2";
-            else if (res === "3") UTENTE_ATTIVO = "p3";
-            else if (res === "4") UTENTE_ATTIVO = "p4";
-            else UTENTE_ATTIVO = "p1";
-            localStorage.setItem('gh_travel_user', UTENTE_ATTIVO);
+        function richiediToken() {
+            let t = prompt("Incolla il tuo GitHub Token (ghp_...):");
+            if(t) { GITHUB_TOKEN = t.trim(); localStorage.setItem('gh_travel_token', GITHUB_TOKEN); caricaDati(); }
         }
-
+        function resettaToken() { localStorage.removeItem('gh_travel_token'); richiediToken(); }
         function cambiaUtenteAttivo() {
-            scegliUtenteIniziale();
-            aggiornaEvidenziazioniUtente();
-            renderizzaTabellaCompleta();
+            let r = prompt("Chi sei? Scrivi il numero:\n1: Luca, 2: Elena, 3: Alessia, 4: Filippo");
+            if(r === "1") UTENTE_ATTIVO = "p1"; else if(r === "2") UTENTE_ATTIVO = "p2"; else if(r === "3") UTENTE_ATTIVO = "p3"; else if(r === "4") UTENTE_ATTIVO = "p4";
+            localStorage.setItem('gh_travel_user', UTENTE_ATTIVO); renderizza();
         }
+        function selezionaUtenteCard(id) { UTENTE_ATTIVO = id; localStorage.setItem('gh_travel_user', UTENTE_ATTIVO); renderizza(); }
 
-        function selezionaUtenteCard(idPersona) {
-            UTENTE_ATTIVO = idPersona;
-            localStorage.setItem('gh_travel_user', UTENTE_ATTIVO);
-            aggiornaEvidenziazioniUtente();
-            renderizzaTabellaCompleta();
-        }
-
-        function aggiornaEvidenziazioniUtente() {
-            document.getElementById('current-user-label').innerText = mappaNomiUtenti[UTENTE_ATTIVO];
-            document.querySelectorAll('.stat-box').forEach(b => b.classList.remove('active-user'));
-            let activeBox = document.getElementById(`box-${UTENTE_ATTIVO}`);
-            if(activeBox) activeBox.classList.add('active-user');
-        }
-
-        function toggleRegione(rId) {
-            let card = document.getElementById(`card_${rId}`);
-            if(card) {
-                card.classList.toggle('collapsed');
-                statoCollassatoRegioni[rId] = card.classList.contains('collapsed');
-                localStorage.setItem('regioni_collassate', JSON.stringify(statoCollassatoRegioni));
-            }
-        }
-
-        function toggleTutteRegioni(chiudiTutto) {
-            document.querySelectorAll('.regione-card').forEach(card => {
-                let rId = card.id.replace('card_', '');
-                if(chiudiTutto) {
-                    card.classList.add('collapsed');
-                } else {
-                    card.classList.remove('collapsed');
-                }
-                statoCollassatoRegioni[rId] = chiudiTutto;
-            });
-            localStorage.setItem('regioni_collassate', JSON.stringify(statoCollassatoRegioni));
-        }
-
-        function renderizzaTabellaCompleta() {
+        function renderizza() {
+            const container = document.getElementById('regions-container');
             container.innerHTML = "";
-            aggiornaEvidenziazioniUtente();
+            document.getElementById('current-user-label').innerText = mappaNomi[UTENTE_ATTIVO];
+            document.querySelectorAll('.stat-box').forEach(b => b.classList.remove('active-user'));
+            document.getElementById(`box-${UTENTE_ATTIVO}`).classList.add('active-user');
 
-            let mappaRegioniCitta = {};
-            for (const regione of Object.keys(datiViaggi)) {
-                mappaRegioniCitta[regione] = [...datiViaggi[regione]];
-            }
-
-            if (statoGlobale["_mappaCittaExtraRegione"]) {
-                for (const [cittaNome, regioneDest] of Object.entries(statoGlobale["_mappaCittaExtraRegione"])) {
-                    if (mappaRegioniCitta[regioneDest]) {
-                        mappaRegioniCitta[regioneDest].push(cittaNome);
-                    } else {
-                        mappaRegioniCitta["📌 Altre Località"].push(cittaNome);
-                    }
-                }
-            }
-
-            for (const [regione, cittaList] of Object.entries(mappaRegioniCitta)) {
+            for (const [regione, cittaList] of Object.entries(datiViaggi)) {
                 let rId = regione.toLowerCase().replace(/[^a-z0-9]/g, "_");
-                let isExtraGroup = regione === "📌 Altre Località";
-
-                cittaList.sort((a, b) => a.localeCompare(b));
-
-                let isCollapsed = statoCollassatoRegioni[rId] === true;
-
                 let cardHTML = `
-                    <div class="regione-card ${isCollapsed ? 'collapsed' : ''}" id="card_${rId}">
-                        <div class="regione-header" onclick="toggleRegione('${rId}')">
-                            <div class="regione-header-left">
-                                ${isExtraGroup ? '' : '📌'} <strong>${regione}</strong>
-                                <span class="regione-badge" id="badge_count_${rId}">0 visitate</span>
-                            </div>
-                            <div style="font-size:12px; opacity:0.6;">↔️ Espandi/Riduci</div>
-                        </div>
-                        <div class="card-content">
-                            <div class="table-header-row">
-                                <div>Città</div>
-                                <div class="${UTENTE_ATTIVO==='p1'?'my-column-highlight':''}">Luca</div>
-                                <div class="${UTENTE_ATTIVO==='p2'?'my-column-highlight':''}">Elena</div>
-                                <div class="${UTENTE_ATTIVO==='p3'?'my-column-highlight':''}">Alessia</div>
-                                <div class="${UTENTE_ATTIVO==='p4'?'my-column-highlight':''}">Filippo</div>
-                            </div>
-                            <div id="body_${rId}"></div>
-                            <div class="regione-add-row">
-                                <input type="text" id="input_add_${rId}" placeholder="Aggiungi città in ${regione}...">
-                                <button onclick="aggiungiCittaInRegione('${regione}', 'input_add_${rId}')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                    <div class="regione-card">
+                        <div class="regione-header"><div>📍 ${regione}</div></div>
+                        <div class="table-header-row"><div>Città</div><div>Luca</div><div>Elena</div><div>Alessia</div><div>Filippo</div></div>
+                        <div id="body_${rId}"></div>
+                    </div>`;
                 container.insertAdjacentHTML('beforeend', cardHTML);
-
-                let bodyRegione = document.getElementById(`body_${rId}`);
+                let body = document.getElementById(`body_${rId}`);
                 
                 cittaList.forEach(citta => {
-                    let isExtraCitta = statoGlobale["_mappaCittaExtraRegione"] && statoGlobale["_mappaCittaExtraRegione"][citta];
-                    let safeId = generaSafeId(citta);
-
-                    let tastiAzione = isExtraCitta ? `
-                        <div class="actions-container">
-                            <button class="btn-action" onclick="modificaCitta(event, '${citta}')">✏️</button>
-                            <button class="btn-action" onclick="eliminaCitta(event, '${citta}')">🗑️</button>
-                        </div>
-                    ` : '';
-
+                    let safeId = citta.toLowerCase().replace(/[^a-z0-9]/g, "_");
                     let rowHTML = `
-                        <div class="citta-row" id="row_${safeId}" data-name="${citta.toLowerCase()}">
-                            <div class="col-citta" id="text_${safeId}">${citta} ${tastiAzione}</div>
-                            <div class="col-check ${UTENTE_ATTIVO==='p1'?'my-column-highlight':''}"><input type="checkbox" class="chk-p1" id="${safeId}_p1" ${UTENTE_ATTIVO!=='p1'?'disabled':''} onclick="salvaCambio('${safeId}', 'p1', this.checked)"></div>
-                            <div class="col-check ${UTENTE_ATTIVO==='p2'?'my-column-highlight':''}"><input type="checkbox" class="chk-p2" id="${safeId}_p2" ${UTENTE_ATTIVO!=='p2'?'disabled':''} onclick="salvaCambio('${safeId}', 'p2', this.checked)"></div>
-                            <div class="col-check ${UTENTE_ATTIVO==='p3'?'my-column-highlight':''}"><input type="checkbox" class="chk-p3" id="${safeId}_p3" ${UTENTE_ATTIVO!=='p3'?'disabled':''} onclick="salvaCambio('${safeId}', 'p3', this.checked)"></div>
-                            <div class="col-check ${UTENTE_ATTIVO==='p4'?'my-column-highlight':''}"><input type="checkbox" class="chk-p4" id="${safeId}_p4" ${UTENTE_ATTIVO!=='p4'?'disabled':''} onclick="salvaCambio('${safeId}', 'p4', this.checked)"></div>
-                        </div>
-                    `;
-                    bodyRegione.insertAdjacentHTML('beforeend', rowHTML);
+                        <div class="citta-row">
+                            <div class="col-citta">${citta}</div>
+                            <div><input type="checkbox" id="${safeId}_p1" ${UTENTE_ATTIVO!=='p1'?'disabled':''} onclick="salva('${safeId}', 'p1', this.checked)"></div>
+                            <div><input type="checkbox" id="${safeId}_p2" ${UTENTE_ATTIVO!=='p2'?'disabled':''} onclick="salva('${safeId}', 'p2', this.checked)"></div>
+                            <div><input type="checkbox" id="${safeId}_p3" ${UTENTE_ATTIVO!=='p3'?'disabled':''} onclick="salva('${safeId}', 'p3', this.checked)"></div>
+                            <div><input type="checkbox" id="${safeId}_p4" ${UTENTE_ATTIVO!=='p4'?'disabled':''} onclick="salva('${safeId}', 'p4', this.checked)"></div>
+                        </div>`;
+                    body.insertAdjacentHTML('beforeend', rowHTML);
                 });
             }
-
-            aggiornaSchermata();
+            aggiornaSpunteEConteggi();
         }
 
-        function generaSafeId(citta) {
-            return citta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
-        }
-
-        async function caricaDatiDaGitHub(forzareRender = false) {
-            if (isSaving) return;
-            if (!GITHUB_TOKEN) {
-                indicator.innerHTML = "🔑 Inserisci il Token";
-                indicator.style.background = "#ef4444";
-                return;
+        function aggiornaSpunteEConteggi() {
+            let punti = { p1: 0, p2: 0, p3: 0, p4: 0 };
+            for (const [regione, cittaList] of Object.entries(datiViaggi)) {
+                cittaList.forEach(citta => {
+                    let safeId = citta.toLowerCase().replace(/[^a-z0-9]/g, "_");
+                    ['p1', 'p2', 'p3', 'p4'].forEach(p => {
+                        let el = document.getElementById(`${safeId}_${p}`);
+                        if(el) {
+                            if(statoGlobale[`${safeId}_${p}`] === true) { el.checked = true; punti[p]++; }
+                            else { el.checked = false; }
+                        }
+                    });
+                });
             }
+            document.getElementById('score-p1').innerText = punti.p1;
+            document.getElementById('score-p2').innerText = punti.p2;
+            document.getElementById('score-p3').innerText = punti.p3;
+            document.getElementById('score-p4').innerText = punti.p4;
+        }
+
+        async function caricaDati() {
+            if(!GITHUB_TOKEN) { document.getElementById('status-indicator').innerText = "🔑 Inserisci Token"; return; }
             try {
-                const urlNocache = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}?nocache=${new Date().getTime()}`;
-                let risposta = await fetch(urlNocache, { 
-                    headers: { 
-                        "Authorization": `Bearer ${GITHUB_TOKEN}`,
-                        "Accept": "application/vnd.github.v3+json"
-                    } 
+                let res = await fetch(`https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`, {
+                    headers: { "Authorization": `Bearer ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" }
                 });
-                
-                if(risposta.ok) {
-                    let jsonRes = await risposta.json();
-                    currentSha = jsonRes.sha;
-                    let datiCloud = JSON.parse(atob(jsonRes.content));
-                    
-                    if (datiCloud && typeof datiCloud === 'object') {
-                        let cambiati = JSON.stringify(statoGlobale) !== JSON.stringify(datiCloud);
-                        if (cambiati || forzareRender) {
-                            statoGlobale = datiCloud;
-                            localStorage.setItem('tabellone_viaggi', JSON.stringify(statoGlobale));
-                            renderizzaTabellaCompleta();
-                        } else {
-                            aggiornaSchermata();
-                        }
-                        indicator.innerHTML = "🟢 GitHub Sincronizzato";
-                        indicator.style.background = "#10b981";
-                    }
-                } else if (risposta.status === 401 || risposta.status === 403) {
-                    indicator.innerHTML = "❌ Token Non Valido";
-                    indicator.style.background = "#ef4444";
-                } else if (risposta.status === 404) {
-                    indicator.innerHTML = "📂 File non trovato, inizializzo...";
-                    indicator.style.background = "#3b82f6";
-                    gestisciSalvataggioConMerge();
-                } else {
-                    indicator.innerHTML = "⚠️ Errore API GitHub (" + risposta.status + ")";
-                    indicator.style.background = "#f59e0b";
+                if(res.ok) {
+                    let json = await res.json(); currentSha = json.sha;
+                    statoGlobale = JSON.parse(atob(json.content));
+                    renderizza();
+                    document.getElementById('status-indicator').innerText = "🟢 Sincronizzato";
+                } else if(res.status === 404) {
+                    document.getElementById('status-indicator').innerText = "📂 Nuovo File";
+                    inviaACloud();
                 }
-            } catch (e) {
-                indicator.innerHTML = "⚠️ Errore Rete / CORS Browser";
-                indicator.style.background = "#f59e0b";
-                if(localStorage.getItem('tabellone_viaggi') && Object.keys(statoGlobale).length === 0) {
-                    statoGlobale = JSON.parse(localStorage.getItem('tabellone_viaggi'));
-                    renderizzaTabellaCompleta();
-                }
-            }
+            } catch(e) { document.getElementById('status-indicator').innerText = "⚠️ Errore Connessione"; }
         }
 
-        function aggiornaSchermata() {
-            let punteggi = { p1: 0, p2: 0, p3: 0, p4: 0 };
-            let totaliRegione = {};
-            let totaleCheckboxesInInserite = 0;
-
-            document.querySelectorAll('.citta-row').forEach(row => {
-                totaleCheckboxesInInserite++;
-                let rowId = row.id.replace('row_', '');
-                let qualcunaVisitata = false;
-
-                ['p1', 'p2', 'p3', 'p4'].forEach(p => {
-                    let checkbox = document.getElementById(`${rowId}_${p}`);
-                    if (checkbox) {
-                        if (statoGlobale[`${rowId}_${p}`] === true) {
-                            checkbox.checked = true;
-                            punteggi[p]++;
-                            qualcunaVisitata = true;
-                        } else {
-                            checkbox.checked = false;
-                        }
-                    }
-                });
-
-                let cardId = row.closest('.regione-card').id.replace('card_', '');
-                if(!totaliRegione[cardId]) totaliRegione[cardId] = 0;
-                if(qualcunaVisitata) totaliRegione[cardId]++;
-            });
-
-            document.getElementById('score-p1').innerText = punteggi.p1;
-            document.getElementById('score-p2').innerText = punteggi.p2;
-            document.getElementById('score-p3').innerText = punteggi.p3;
-            document.getElementById('score-p4').innerText = punteggi.p4;
-
-            for (const [rId, conteggio] of Object.entries(totaliRegione)) {
-                let lbl = document.getElementById(`badge_count_${rId}`);
-                if(lbl) lbl.innerText = `${conteggio} visitate`;
-            }
-
-            let totaleCittaVisitateAlmenoUnaVolta = Object.keys(totaliRegione).reduce((a, b) => a + totaliRegione[b], 0);
-            let totaleRigheTotali = totaleCheckboxesInInserite / 4; 
-            let percentuale = totaleRigheTotali > 0 ? Math.round((totaleCittaVisitateAlmenoUnaVolta / totaleRigheTotali) * 100) : 0;
-            document.getElementById('total-progress').style.width = `${percentuale}%`;
+        function salva(cittaId, persona, checked) {
+            statoGlobale[`${cittaId}_${persona}`] = checked;
+            aggiornaSpunteEConteggi();
+            inviaACloud();
         }
 
-        function filtraCitta() {
-            let query = document.getElementById('search-input').value.toLowerCase().trim();
-            
-            document.querySelectorAll('.regione-card').forEach(card => {
-                let rigaVisibileNellaCard = false;
-                
-                card.querySelectorAll('.citta-row').forEach(row => {
-                    let nomeCitta = row.getAttribute('data-name');
-                    if (nomeCitta.includes(query)) {
-                        row.style.display = 'grid';
-                        rigaVisibileNellaCard = true;
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-
-                let rowAdd = card.querySelector('.regione-add-row');
-                if (rigaVisibileNellaCard || query === "") {
-                    card.style.display = 'block';
-                    if(rowAdd) rowAdd.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                    if(rowAdd) rowAdd.style.display = 'none';
-                }
-            });
-        }
-
-        function aggiungiCittaInRegione(regioneNome, inputId) {
-            let inputField = document.getElementById(inputId);
-            let nomeCitta = inputField.value.trim();
-            if (nomeCitta === "") return;
-
-            if (!statoGlobale["_mappaCittaExtraRegione"]) statoGlobale["_mappaCittaExtraRegione"] = {};
-            statoGlobale["_mappaCittaExtraRegione"][nomeCitta] = regioneNome;
-
-            inputField.value = "";
-            renderizzaTabellaCompleta();
-            gestisciSalvataggioConMerge();
-        }
-
-        function eliminarCitta(event, nomeCitta) {
-            event.stopPropagation();
-            if (!confirm(`Vuoi davvero eliminare "${nomeCitta}" dalla lista?`)) return;
-
-            if (statoGlobale["_mappaCittaExtraRegione"]) delete statoGlobale["_mappaCittaExtraRegione"][nomeCitta];
-
-            let safeId = generaSafeId(nomeCitta);
-            delete statoGlobale[`${safeId}_p1`];
-            delete statoGlobale[`${safeId}_p2`];
-            delete statoGlobale[`${safeId}_p3`];
-            delete statoGlobale[`${safeId}_p4`];
-
-            renderizzaTabellaCompleta();
-            gestisciSalvataggioConMerge();
-        }
-
-        function modificaCitta(event, vecchioNome) {
-            event.stopPropagation();
-            let nuovoNome = prompt(`Modifica il nome della città:`, vecchioNome);
-            if (nuovoNome === null || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
-            nuovoNome = nuovoNome.trim();
-
-            if (statoGlobale["_mappaCittaExtraRegione"]) {
-                let regioneAppartenenza = statoGlobale["_mappaCittaExtraRegione"][vecchioNome];
-                delete statoGlobale["_mappaCittaExtraRegione"][vecchioNome];
-                statoGlobale["_mappaCittaExtraRegione"][nuovoNome] = regioneAppartenenza;
-            }
-
-            let vecchioSafeId = generaSafeId(vecchioNome);
-            let nuovoSafeId = generaSafeId(nuovoNome);
-
-            ['p1', 'p2', 'p3', 'p4'].forEach(p => {
-                if (statoGlobale[`${vecchioSafeId}_${p}`] !== undefined) {
-                    statoGlobale[`${nuovoSafeId}_${p}`] = statoGlobale[`${vecchioSafeId}_${p}`];
-                    delete statoGlobale[`${vecchioSafeId}_${p}`];
-                }
-            });
-
-            renderizzaTabellaCompleta();
-            gestisciSalvataggioConMerge();
-        }
-
-        function salvaCambio(cittaId, persona, checked) {
-            let chiave = `${cittaId}_${persona}`;
-            statoGlobale[chiave] = checked;
-            
-            let row = document.getElementById(`row_${cittaId}`);
-            if(row) {
-                row.classList.add('row-saving-flash');
-                setTimeout(() => row.classList.remove('row-saving-flash'), 700);
-            }
-
-            aggiornaSchermata();
-            gestisciSalvataggioConMerge();
-        }
-
-        async function gestisciSalvataggioConMerge() {
-            if (!GITHUB_TOKEN) return;
+        async function inviaACloud() {
+            if(!GITHUB_TOKEN || isSaving) return;
             isSaving = true;
-            indicator.innerHTML = "🔄 Sincronizzazione intelligente...";
-            indicator.style.background = "#3b82f6";
-
             try {
-                const urlNocache = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}?nocache=${new Date().getTime()}`;
-                let rispostaGet = await fetch(urlNocache, { 
-                    headers: { 
-                        "Authorization": `Bearer ${GITHUB_TOKEN}`,
-                        "Accept": "application/vnd.github.v3+json"
-                    } 
+                let resGet = await fetch(`https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`, {
+                    headers: { "Authorization": `Bearer ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" }
                 });
-                
-                let datiCloud = {};
-                if (rispostaGet.ok) {
-                    let jsonRes = await rispostaGet.json();
-                    currentSha = jsonRes.sha;
-                    datiCloud = JSON.parse(atob(jsonRes.content));
-                }
+                if(resGet.ok) { let j = await resGet.json(); currentSha = j.sha; }
 
-                if (datiCloud["_mappaCittaExtraRegione"]) {
-                    if (!statoGlobale["_mappaCittaExtraRegione"]) statoGlobale["_mappaCittaExtraRegione"] = {};
-                    statoGlobale["_mappaCittaExtraRegione"] = { ...datiCloud["_mappaCittaExtraRegione"], ...statoGlobale["_mappaCittaExtraRegione"] };
-                }
+                let b64 = btoa(unescape(encodeURIComponent(JSON.stringify(statoGlobale, null, 2))));
+                let payload = { message: "Aggiornamento tabellone", content: b64, branch: GH_CONFIG.branch };
+                if(currentSha) payload.sha = currentSha;
 
-                for (const chiave of Object.keys(datiCloud)) {
-                    if (!chiave.startsWith('_')) {
-                        let parti = chiave.split('_');
-                        let persona = parti[parti.length - 1]; 
-                        if (persona !== UTENTE_ATTIVO) {
-                            statoGlobale[chiave] = datiCloud[chiave];
-                        }
-                    }
-                }
-
-                localStorage.setItem('tabellone_viaggi', JSON.stringify(statoGlobale));
-
-                const apiWriteUrl = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`;
-                let contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(statoGlobale, null, 2))));
-                let bodyPayload = {
-                    message: `Aggiornato da ${mappaNomiUtenti[UTENTE_ATTIVO]}`,
-                    content: contentBase64,
-                    branch: GH_CONFIG.branch
-                };
-                if (currentSha) bodyPayload.sha = currentSha;
-
-                let rispostaPut = await fetch(apiWriteUrl, {
-                    method: "PUT", 
-                    headers: { 
-                        "Content-Type": "application/json", 
-                        "Authorization": `Bearer ${GITHUB_TOKEN}`,
-                        "Accept": "application/vnd.github.v3+json"
-                    },
-                    body: JSON.stringify(bodyPayload)
+                let resPut = await fetch(`https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GITHUB_TOKEN}` },
+                    body: JSON.stringify(payload)
                 });
-                
-                if(rispostaPut.ok) {
-                    let jsonResPut = await rispostaPut.json();
-                    currentSha = jsonResPut.content.sha;
-                    indicator.innerHTML = "🟢 GitHub Sincronizzato";
-                    indicator.style.background = "#10b981";
-                } else {
-                    throw new Error("Errore Salvataggio");
-                }
-            } catch (e) {
-                indicator.innerHTML = "❌ Errore Connessione (Salvato in Locale)";
-                indicator.style.background = "#ef4444";
-            } finally {
-                isSaving = false;
-                aggiornaSchermata();
-            }
+                if(resPut.ok) { let jPut = await resPut.json(); currentSha = jPut.content.sha; document.getElementById('status-indicator').innerText = "🟢 Sincronizzato"; }
+            } catch(e) {} finally { isSaving = false; }
         }
 
-        if(localStorage.getItem('tabellone_viaggi')) {
-            try { statoGlobale = JSON.parse(localStorage.getItem('tabellone_viaggi')); } catch(e){}
-        }
-
-        renderizzaTabellaCompleta();
-        caricaDatiDaGitHub(true);
-        setInterval(() => caricaDatiDaGitHub(false), 15000); // Sincronizzazione automatica ogni 15 secondi
+        renderizza();
+        if(!GITHUB_TOKEN) { setTimeout(richiediToken, 500); } else { caricaDati(); }
     </script>
 </body>
 </html>
