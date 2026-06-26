@@ -139,7 +139,7 @@
     "Tenno": "Trentino-Alto Adige",
     "Braid": "Trentino-Alto Adige",
     "Andalo": "Trentino-Alto Adige",
-    "PerÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ²": "Trentino-Alto Adige",
+    "PerÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ²": "Trentino-Alto Adige",
     "Peio": "Trentino-Alto Adige"
   },
   "viareggio_p2": true,
@@ -162,5 +162,6 @@
   "vipiteno_p2": true,
   "tenno_p2": true,
   "smarano_p2": true,
-  "peio_p2": true
+  "peio_p2": true,
+  "bolzano_p2": true
 }
