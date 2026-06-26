@@ -346,7 +346,7 @@
     <script>
         const GH_CONFIG = {
             owner: "marchesiniluca",   
-            repo: "citt--visitate",    
+            repo: "citta-visitate",    // Corretto con un solo trattino
             path: "dati.json",         
             branch: "main"             
         };
@@ -357,7 +357,7 @@
         }
 
         function richiediToken() {
-            let token = prompt("Inserisci il tuo GitHub Token (ghp_...):\n(Verrà salvato in sicurezza solo sul tuo browser)");
+            let token = prompt("Inserisci il tuo GitHub Token (ghp_...):\n(Verrà salvato sul tuo browser)");
             if (token) {
                 GITHUB_TOKEN = token.trim();
                 localStorage.setItem('gh_travel_token', GITHUB_TOKEN);
@@ -365,7 +365,7 @@
         }
 
         function resettaToken() {
-            let conferma = confirm("Vuoi rimuovere il token attuale per inserirne uno nuovo?");
+            let conferma = confirm("Vuoi inserire un nuovo token?");
             if (conferma) {
                 localStorage.removeItem('gh_travel_token');
                 richiediToken();
@@ -562,7 +562,7 @@
                 const urlNocache = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}?nocache=${new Date().getTime()}`;
                 let risposta = await fetch(urlNocache, { 
                     headers: { 
-                        "Authorization": `token ${GITHUB_TOKEN}`,
+                        "Authorization": `Bearer ${GITHUB_TOKEN}`, // Aggiornato standard a Bearer
                         "Accept": "application/vnd.github.v3+json"
                     } 
                 });
@@ -585,16 +585,18 @@
                         indicator.style.background = "#10b981";
                     }
                 } else if (risposta.status === 401 || risposta.status === 403) {
-                    indicator.innerHTML = "❌ Token Non Valido";
+                    indicator.innerHTML = "❌ Token Non Valido o Scaduto";
                     indicator.style.background = "#ef4444";
                 } else if (risposta.status === 404) {
+                    indicator.innerHTML = "📂 File non trovato, creo nuovo...";
+                    indicator.style.background = "#3b82f6";
                     gestisciSalvataggioConMerge();
                 } else {
-                    indicator.innerHTML = "⚠️ Errore GitHub (" + risposta.status + ")";
+                    indicator.innerHTML = "⚠️ Errore API GitHub (" + risposta.status + ")";
                     indicator.style.background = "#f59e0b";
                 }
             } catch (e) {
-                indicator.innerHTML = "⚠️ Errore Connessione Browser";
+                indicator.innerHTML = "⚠️ Errore Rete / CORS Browser";
                 indicator.style.background = "#f59e0b";
                 if(localStorage.getItem('tabellone_viaggi') && Object.keys(statoGlobale).length === 0) {
                     statoGlobale = JSON.parse(localStorage.getItem('tabellone_viaggi'));
@@ -751,7 +753,12 @@
 
             try {
                 const urlNocache = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}?nocache=${new Date().getTime()}`;
-                let rispostaGet = await fetch(urlNocache, { headers: { "Authorization": `token ${GITHUB_TOKEN}` } });
+                let rispostaGet = await fetch(urlNocache, { 
+                    headers: { 
+                        "Authorization": `Bearer ${GITHUB_TOKEN}`,
+                        "Accept": "application/vnd.github.v3+json"
+                    } 
+                });
                 
                 let datiCloud = {};
                 if (rispostaGet.ok) {
@@ -788,7 +795,11 @@
 
                 let rispostaPut = await fetch(apiWriteUrl, {
                     method: "PUT", 
-                    headers: { "Content-Type": "application/json", "Authorization": `token ${GITHUB_TOKEN}` },
+                    headers: { 
+                        "Content-Type": "application/json", 
+                        "Authorization": `Bearer ${GITHUB_TOKEN}`,
+                        "Accept": "application/vnd.github.v3+json"
+                    },
                     body: JSON.stringify(bodyPayload)
                 });
                 
@@ -815,7 +826,7 @@
 
         renderizzaTabellaCompleta();
         caricaDatiDaGitHub(true);
-        setInterval(() => caricaDatiDaGitHub(false), 8000);
+        setInterval(() => caricaDatiDaGitHub(false), 15000); // Rallentato a 15s per evitare blocchi IP automatici da GitHub
     </script>
 </body>
 </html>
