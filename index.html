@@ -120,11 +120,6 @@
             text-align: center;
             cursor: pointer;
         }
-        .stat-box::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 4px;
-        }
         .stat-box.p1::before { background-color: var(--p1-color); }
         .stat-box.p2::before { background-color: var(--p2-color); }
         .stat-box.p3::before { background-color: var(--p3-color); }
@@ -346,7 +341,7 @@
     <script>
         const GH_CONFIG = {
             owner: "marchesiniluca",   
-            repo: "citta-visitate",    // Corretto con un solo trattino
+            repo: "citt--visitate",    // Mantenuto con due trattini come da tua immagine
             path: "dati.json",         
             branch: "main"             
         };
@@ -562,7 +557,7 @@
                 const urlNocache = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}?nocache=${new Date().getTime()}`;
                 let risposta = await fetch(urlNocache, { 
                     headers: { 
-                        "Authorization": `Bearer ${GITHUB_TOKEN}`, // Aggiornato standard a Bearer
+                        "Authorization": `Bearer ${GITHUB_TOKEN}`,
                         "Accept": "application/vnd.github.v3+json"
                     } 
                 });
@@ -585,10 +580,10 @@
                         indicator.style.background = "#10b981";
                     }
                 } else if (risposta.status === 401 || risposta.status === 403) {
-                    indicator.innerHTML = "❌ Token Non Valido o Scaduto";
+                    indicator.innerHTML = "❌ Token Non Valido";
                     indicator.style.background = "#ef4444";
                 } else if (risposta.status === 404) {
-                    indicator.innerHTML = "📂 File non trovato, creo nuovo...";
+                    indicator.innerHTML = "📂 File non trovato, inizializzo...";
                     indicator.style.background = "#3b82f6";
                     gestisciSalvataggioConMerge();
                 } else {
@@ -689,7 +684,7 @@
             gestisciSalvataggioConMerge();
         }
 
-        function eliminaCitta(event, nomeCitta) {
+        function eliminarCitta(event, nomeCitta) {
             event.stopPropagation();
             if (!confirm(`Vuoi davvero eliminare "${nomeCitta}" dalla lista?`)) return;
 
@@ -826,7 +821,7 @@
 
         renderizzaTabellaCompleta();
         caricaDatiDaGitHub(true);
-        setInterval(() => caricaDatiDaGitHub(false), 15000); // Rallentato a 15s per evitare blocchi IP automatici da GitHub
+        setInterval(() => caricaDatiDaGitHub(false), 15000); // Sincronizzazione automatica ogni 15 secondi
     </script>
 </body>
 </html>
