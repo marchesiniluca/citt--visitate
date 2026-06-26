@@ -529,7 +529,7 @@
             </div>
             <div class="modal-field">
                 <label>Note e ricordi di viaggio</label>
-                <textarea id="diary-text" rows="4" placeholder="Cosa avete visto di bello? Dove avete mangiato?"></textarea>
+                <textarea id="diary-text" rows="4" placeholder="Cosa avete visto di bello? Where avete mangiato?"></textarea>
             </div>
             <div style="font-size: 11px; color: var(--text-light); margin-bottom: 10px;" id="diary-author-info"></div>
             <div class="modal-buttons">
@@ -577,26 +577,145 @@
         let statoCollassatoRegioni = JSON.parse(localStorage.getItem('regioni_collassate') || '{}');
 
         const datiViaggi = {
-            "Abruzzo": ["L'Aquila", "Pescara", "Chieti", "Teramo", "Montesilvano", "Avezzano", "Vasto", "Lanciano", "Sulmona", "Roseto degli Abruzzi"],
-            "Basilicata": ["Potenza", "Matera", "Melfi", "Pisticci", "Lavello", "Rionero in Vulture", "Lauria", "Bernalda", "Venosa"],
-            "Calabria": ["Catanzaro", "Reggio Calabria", "Cosenza", "Crotone", "Lamezia Terme", "Vibo Valentia", "Rossano", "Corigliano Calabro"],
-            "Campania": ["Napoli", "Salerno", "Caserta", "Benevento", "Avellino", "Giugliano in Campania", "Torre del Greco", "Pozzuoli", "Aversa"],
-            "Emilia-Romagna": ["Bologna", "Parma", "Modena", "Reggio Emilia", "Ravenna", "Rimini", "Ferrara", "Forlì", "Piacenza", "Cesena"],
-            "Friuli-Venezia Giulia": ["Trieste", "Udine", "Pordenone", "Gorizia", "Monfalcone", "Sacile", "Cordenons", "Codroipo"],
-            "Lazio": ["Roma", "Latina", "Viterbo", "Rieti", "Frosinone", "Guidonia Montecelio", "Fiumicino", "Aprilia", "Pomezia"],
-            "Liguria": ["Genova", "La Spezia", "Savona", "Sanremo", "Imperia", "Rapallo", "Chiavari", "Ventimiglia"],
-            "Lombardia": ["Milano", "Brescia", "Bergamo", "Monza", "Como", "Varese", "Pavia", "Cremona", "Mantova", "Lecco"],
-            "Marche": ["Ancona", "Pesaro", "Fano", "Ascoli Piceno", "Macerata", "Civitanova Marche", "Senigallia", "Jesi"],
-            "Molise": ["Campobasso", "Isernia", "Termoli", "Venafro", "Bojano", "Campomarino", "Larino", "Montenero di Bisaccia"],
-            "Piemonte": ["Torino", "Novara", "Alessandria", "Asti", "Cuneo", "Moncalieri", "Collegno", "Rivoli", "Vercelli"],
-            "Puglia": ["Bari", "Taranto", "Foggia", "Lecce", "Andria", "Barletta", "Brindisi", "Altamura", "Molfetta"],
-            "Sardegna": ["Cagliari", "Sassari", "Quartu Sant'Elena", "Olbia", "Alghero", "Nuoro", "Oristano", "Carbonia"],
-            "Sicilia": ["Palermo", "Catania", "Messina", "Siracusa", "Marsala", "Gela", "Ragusa", "Trapani", "Caltanissetta"],
-            "Toscana": ["Firenze", "Prato", "Livorno", "Arezzo", "Pistoia", "Pisa", "Lucca", "Grosseto", "Massa", "Siena"],
-            "Trentino-Alto Adige": ["Trento", "Bolzano", "Rovereto", "Merano", "Bressanone", "Pergine Valsugana", "Laives", "Arco"],
-            "Umbria": ["Perugia", "Terni", "Foligno", "Città di Castello", "Spoleto", "Gubbio", "Assisi", "Todi"],
-            "Valle d'Aosta": ["Aosta", "Saint-Vincent", "Châtillon", "Sarre", "Pont-Saint-Martin", "Quart", "Saint-Christophe"],
-            "Veneto": ["Venezia", "Verona", "Padova", "Vicenza", "Treviso", "Rovigo", "Chioggia", "Bassano del Grappa"],
+            "Abruzzo": [
+                "L'Aquila", "Pescara", "Chieti", "Teramo", "Montesilvano", "Avezzano", "Vasto", "Lanciano", 
+                "Sulmona", "Roseto degli Abruzzi", "Francavilla al Mare", "Ortona", "Giulianova", "San Salvo", 
+                "Spoltore", "Martinsicuro", "Silvi", "Pineto", "Città Sant'Angelo", "Atri", "Celano", 
+                "Penne", "Tagliacozzo", "Alba Adriatica", "Tortoreto", "Scanno", "Civitella del Tronto", 
+                "Guardiagrele", "Loreto Aprutino", "Popoli Terme", "Campli", "Roccaraso"
+            ],
+            "Basilicata": [
+                "Potenza", "Matera", "Melfi", "Pisticci", "Lavello", "Rionero in Vulture", "Lauria", "Bernalda", 
+                "Venosa", "Avigliano", "Montescaglioso", "Ferrandina", "Senise", "Tricarico", "Tito", 
+                "Genzano di Lucania", "Lagonegro", "Maratea", "Latronico", "Viggiano", "Sant'Arcangelo", 
+                "Oppido Lucano", "Palazzo San Gervasio", "Bella", "Grassano", "Tursi", "Pomarico", 
+                "Marsicovetere", "Moliterno", "Tramutola", "Acerenza", "Rotonda"
+            ],
+            "Calabria": [
+                "Catanzaro", "Reggio Calabria", "Cosenza", "Crotone", "Lamezia Terme", "Vibo Valentia", 
+                "Rossano", "Corigliano Calabro", "Rende", "Castrovillari", "Acri", "Palmi", "Siderno", 
+                "Paola", "Gioia Tauro", "Cirò Marina", "Diamante", "Tropea", "Amantea", "Locri", 
+                "Bagnara Calabra", "Scalea", "Cassano all'Ionio", "San Giovanni in Fiore", "Isola di Capo Rizzuto", 
+                "Taurianova", "Rosarno", "Melito di Porto Salvo", "Cetraro", "Mendicino", "Luzzi", "Scilla"
+            ],
+            "Campania": [
+                "Napoli", "Salerno", "Caserta", "Benevento", "Avellino", "Giugliano in Campania", "Torre del Greco", 
+                "Pozzuoli", "Aversa", "Castellammare di Stabia", "Ercolano", "Marano di Napoli", "Portici", 
+                "Cava de' Tirreni", "Acerra", "Casoria", "Scafati", "Pompei", "Battipaglia", "Capua", 
+                "Nocera Inferiore", "Maddaloni", "Marcianise", "Mondragone", "Ariano Irpino", "Somma Vesuviana", 
+                "Nola", "Sorrento", "Amalfi", "Positano", "Ischia", "Capri"
+            ],
+            "Emilia-Romagna": [
+                "Bologna", "Parma", "Modena", "Reggio Emilia", "Ravenna", "Rimini", "Ferrara", "Forlì", 
+                "Piacenza", "Cesena", "Imola", "Carpi", "Faenza", "Sassuolo", "Casalecchio di Reno", "Cento", 
+                "Riccione", "Formigine", "Castelfranco Emilia", "San Lazzaro di Savena", "Lugo", "Fidenza", 
+                "Cattolica", "Cervia", "Comacchio", "Correggio", "Vignola", "Cesenatico", "Mirandola", 
+                "Pieve di Cento", "Bobbio", "Castell'Arquato"
+            ],
+            "Friuli-Venezia Giulia": [
+                "Trieste", "Udine", "Pordenone", "Gorizia", "Monfalcone", "Sacile", "Cordenons", "Codroipo", 
+                "Porcia", "Cervignano del Friuli", "Ronchi dei Legionari", "Spilimbergo", "Maniago", "Latisana", 
+                "San Vito al Tagliamento", "Cividale del Friuli", "Gemona del Friuli", "Tolmezzo", "Grado", 
+                "Lignano Sabbiadoro", "Tarvisio", "Aquileia", "Palmanova", "San Daniele del Friuli", "Muggia", 
+                "Duino-Aurisina", "Cormons", "Gradisca d'Isonzo", "Fontanafredda", "Aviano", "Fiume Veneto", "Pasiano di Pordenone"
+            ],
+            "Lazio": [
+                "Roma", "Latina", "Viterbo", "Rieti", "Frosinone", "Guidonia Montecelio", "Fiumicino", "Aprilia", 
+                "Pomezia", "Anzio", "Tivoli", "Velletri", "Civitavecchia", "Nettuno", "Ardea", "Terracina", 
+                "Marino", "Albano Laziale", "Monterotondo", "Ladispoli", "Fondi", "Formia", "Cassino", 
+                "Cisterna di Latina", "Cerveteri", "Tarquinia", "Gaeta", "Subiaco", "Frascati", "Bracciano", 
+                "Alatri", "Sora"
+            ],
+            "Liguria": [
+                "Genova", "La Spezia", "Savona", "Sanremo", "Imperia", "Rapallo", "Chiavari", "Ventimiglia", 
+                "Albenga", "Sarzana", "Sestri Levante", "Taggia", "Varazze", "Lavagna", "Loano", "Arenzano", 
+                "Finale Ligure", "Alassio", "Camogli", "Portofino", "Lerici", "Levanto", "Bordighera", 
+                "Recco", "Santa Margherita Ligure", "Cairo Montenotte", "Arcola", "Luni", "Santo Stefano di Magra", 
+                "Cogoleto", "Quiliano", "Noli"
+            ],
+            "Lombardia": [
+                "Milano", "Brescia", "Bergamo", "Monza", "Como", "Varese", "Pavia", "Cremona", "Mantova", 
+                "Lecco", "Lodi", "Sondrio", "Busto Arsizio", "Sesto San Giovanni", "Cinisello Balsamo", "Voghera", 
+                "Vigevano", "Legnano", "Gallarate", "Rho", "Crema", "Cantù", "Lissone", "Seregno", 
+                "Desio", "Rozzano", "San Donato Milanese", "Segrate", "Gorgonzola", "Bellagio", "Sirmione", "Limone sul Garda"
+            ],
+            "Marche": [
+                "Ancona", "Pesaro", "Fano", "Ascoli Piceno", "Macerata", "Civitanova Marche", "Senigallia", "Jesi", 
+                "San Benedetto del Tronto", "Osimo", "Fabriano", "Porto Sant'Elpidio", "Recanati", "Tolentino", 
+                "Castelfidardo", "Urbino", "Fermo", "Grottammare", "Corinaldo", "Gradara", "Loreto", 
+                "Offida", "Camerino", "Amandola", "Cagli", "Fossombrone", "Urbania", "Falconara Marittima", 
+                "Chiaravalle", "Sassoferrato", "Mandolfo", "Porto San Giorgio"
+            ],
+            "Molise": [
+                "Campobasso", "Isernia", "Termoli", "Venafro", "Bojano", "Campomarino", "Larino", "Montenero di Bisaccia", 
+                "Agnone", "Guglionesi", "Riccia", "Trivento", "San Martino in Pensilis", "Frosolone", "Sepino", 
+                "Capracotta", "Scapoli", "Bagnoli del Trigno", "Petacciato", "Ferrazzano", "Ripalimosani", "Baranello", 
+                "Vinchiaturo", "Mirabello Sannitico", "Cercemaggiore", "Casacalenda", "Colletorto", "Jelsi", 
+                "Pesche", "Belmonte del Sannio", "Rocchetta a Volturno", "Fornelli"
+            ],
+            "Piemonte": [
+                "Torino", "Novara", "Alessandria", "Asti", "Cuneo", "Moncalieri", "Collegno", "Rivoli", 
+                "Vercelli", "Biella", "Verbania", "Alba", "Bra", "Nichelino", "Settimo Torinese", "Grugliasco", 
+                "Chieri", "Casale Monferrato", "Tortona", "Pinerolo", "Venaria Reale", "Saluzzo", "Fossano", 
+                "Mondovì", "Savigliano", "Acqui Terme", "Novi Ligure", "Domodossola", "Arona", "Stresa", 
+                "Ivrea", "Borgomanero"
+            ],
+            "Puglia": [
+                "Bari", "Taranto", "Foggia", "Lecce", "Andria", "Barletta", "Brindisi", "Altamura", 
+                "Molfetta", "Cerignola", "Manfredonia", "Bitonto", "San Severo", "Bisceglie", "Trani", 
+                "Gallipoli", "Otranto", "Alberobello", "Ostuni", "Martina Franca", "Monopoli", "Corato", 
+                "Gravina in Puglia", "Gioia del Colle", "Fasano", "Lucera", "Nardò", "Galatina", 
+                "Copertino", "Manduria", "Grottaglie", "Massafra"
+            ],
+            "Sardegna": [
+                "Cagliari", "Sassari", "Quartu Sant'Elena", "Olbia", "Alghero", "Nuoro", "Oristano", 
+                "Carbonia", "Iglesias", "Selargius", "Assemini", "Capoterra", "Porto Torres", "Sestu", 
+                "Monserrato", "Sinnai", "Sorso", "Tempio Pausania", "Villacidro", "Guspini", "Tortolì", 
+                "Lanusei", "Bosa", "Castelsardo", "Carloforte", "Sanluri", "Macomer", "Ozieri", 
+                "Arzachena", "Siniscola", "Quartucciu", "Pula"
+            ],
+            "Sicilia": [
+                "Palermo", "Catania", "Messina", "Siracusa", "Marsala", "Gela", "Ragusa", "Trapani", 
+                "Caltanissetta", "Agrigento", "Acireale", "Scicli", "Noto", "Taormina", "Cefalù", 
+                "Modica", "Vittoria", "Bagheria", "Misterbianco", "Paternò", "Carini", "Partinico", 
+                "Termini Imerese", "Mazara del Vallo", "Castelvetrano", "Sciacca", "Licata", "Canicattì", 
+                "Enna", "Piazza Armerina", "Augusta", "Avola"
+            ],
+            "Toscana": [
+                "Firenze", "Prato", "Livorno", "Arezzo", "Pistoia", "Pisa", "Lucca", "Grosseto", 
+                "Massa", "Siena", "Carrara", "Viareggio", "Sesto Fiorentino", "Empoli", "Campi Bisenzio", 
+                "Capannori", "Cascina", "Piombino", "San Miniato", "Montevarchi", "Cortona", "San Gimignano", 
+                "Volterra", "Pienza", "Montepulciano", "Chiusi", "Forte dei Marmi", "Pietrasanta", "Follonica", 
+                "Orbetello", "Portoferraio", "Pontedera"
+            ],
+            "Trentino-Alto Adige": [
+                "Trento", "Bolzano", "Rovereto", "Merano", "Bressanone", "Pergine Valsugana", "Laives", "Arco", 
+                "Riva del Garda", "Brunico", "Appiano sulla Strada del Vino", "Lana", "Caldaro sulla Strada del Vino", "Renon", 
+                "Vipiteno", "Ortisei", "Selva di Val Gardena", "Cavalese", "Predazzo", "Mezzolombardo", 
+                "Mezzocorona", "Mori", "Ala", "Lavis", "Borgo Valsugana", "Cles", "Pinzolo", 
+                "Madonna di Campiglio", "Canazei", "Moena", "Dobbiaco", "San Candido"
+            ],
+            "Umbria": [
+                "Perugia", "Terni", "Foligno", "Città di Castello", "Spoleto", "Gubbio", "Assisi", "Todi", 
+                "Orvieto", "Bastia Umbra", "Narni", "Marsciano", "Corciano", "Umbertide", "Gualdo Tadino", 
+                "Castiglione del Lago", "Amelia", "Spello", "Deruta", "Trevi", "Norcia", "Cascia", 
+                "Panicale", "Città della Pieve", "Montefalco", "Bevagna", "Passignano sul Trasimeno", "Magione", 
+                "San Giustino", "Acquasparta", "Nocera Umbra", "Giano dell'Umbria"
+            ],
+            "Valle d'Aosta": [
+                "Aosta", "Saint-Vincent", "Châtillon", "Sarre", "Pont-Saint-Martin", "Quart", "Saint-Christophe", 
+                "Courmayeur", "Gressoney-Saint-Jean", "Gressoney-La-Trinité", "Valtournenche", "Cogne", "Nus", 
+                "Donnas", "Verrès", "Morgex", "Pré-Saint-Didier", "La Thuile", "Bard", "Fénis", 
+                "Introd", "Arvier", "Avise", "Brusson", "Ayas", "Charvensod", "Gignod", 
+                "La Salle", "Montjovet", "Pollein", "Saint-Pierre", "Etroubles"
+            ],
+            "Veneto": [
+                "Venezia", "Verona", "Padova", "Vicenza", "Treviso", "Rovigo", "Chioggia", "Bassano del Grappa", 
+                "San Donà di Piave", "Schio", "Mira", "Belluno", "Conegliano", "Castelfranco Veneto", "Villafranca di Verona", 
+                "Montebelluna", "Vittorio Veneto", "Mogliano Veneto", "Spinea", "Mirano", "Arzignano", 
+                "Legnago", "Jesolo", "Caorle", "San Michele al Tagliamento", "Cortina d'Ampezzo", "Peschiera del Garda", 
+                "Lazise", "Bardolino", "Malcesine", "Marostica", "Asolo"
+            ],
             "📌 Altre Località": []
         };
 
@@ -1113,7 +1232,7 @@
         function modificaCitta(vecchioNome) {
             let nuovoNome = prompt(`Modifica il nome:`, vecchioNome);
             if (!nuovoNome || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
-            nuovoNome = nuevoNome.trim();
+            nuovoNome = nuovoNome.trim();
 
             if (statoGlobale["_mappaCittaExtraRegione"]) {
                 let r = statoGlobale["_mappaCittaExtraRegione"][vecchioNome];
