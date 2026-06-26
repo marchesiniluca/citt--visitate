@@ -61,14 +61,34 @@
             transition: all 0.3s ease;
         }
 
-        #user-badge {
+        .user-controls {
+            display: flex;
+            gap: 10px;
             margin-top: 10px;
+            align-items: center;
+        }
+
+        #user-badge {
             font-size: 12px;
             padding: 4px 12px;
             border-radius: 12px;
             background: rgba(255,255,255,0.2);
             cursor: pointer;
             border: 1px dashed rgba(255,255,255,0.4);
+        }
+
+        #token-reset-btn {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            cursor: pointer;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            transition: background 0.2s;
+        }
+        #token-reset-btn:hover {
+            background: rgba(239, 68, 68, 0.4);
         }
         
         .top-sticky-container {
@@ -286,6 +306,7 @@
             .actions-container { opacity: 1; margin-top: 4px; }
             input[type="checkbox"] { transform: scale(1.1); }
             .regione-add-row { padding: 10px; }
+            .user-controls { flex-direction: column; gap: 5px; }
         }
     </style>
 </head>
@@ -295,7 +316,10 @@
         <div class="header-titolo">✈️ Città Visitate d'Italia</div>
         <div class="subtitle">Tabellone Condiviso e Sincronizzato</div>
         <div id="status-indicator">⏳ Avvio...</div>
-        <div id="user-badge" onclick="cambiaUtenteAttivo()">👤 Accesso come: <strong id="current-user-label">Seleziona...</strong> (Clicca per cambiare)</div>
+        <div class="user-controls">
+            <div id="user-badge" onclick="cambiaUtenteAttivo()">👤 Accesso come: <strong id="current-user-label">Seleziona...</strong> (Clicca per cambiare)</div>
+            <div id="token-reset-btn" onclick="resettaToken()">🔑 Cambia Token GitHub</div>
+        </div>
     </div>
 
     <div class="top-sticky-container">
@@ -320,6 +344,7 @@
     <div class="main-content" id="regions-container"></div>
 
     <script>
+        // CONFIGURAZIONE REPOSITORY GITHUB
         const GH_CONFIG = {
             owner: "marchesiniluca",   
             repo: "citt--visitate",    
@@ -329,11 +354,27 @@
 
         let GITHUB_TOKEN = localStorage.getItem('gh_travel_token');
         if (!GITHUB_TOKEN) {
-            GITHUB_TOKEN = prompt("Inserisci il tuo GitHub Token (ghp_...):\n(Verrà salvato in sicurezza solo sul tuo browser)");
-            if (GITHUB_TOKEN) localStorage.setItem('gh_travel_token', GITHUB_TOKEN.trim());
+            richiediToken();
         }
 
-        let UTENTE_ATTIVO = localStorage.getItem('gh_travel_user'); // p1, p2, p3, p4
+        function richiediToken() {
+            let token = prompt("Inserisci il tuo GitHub Token (ghp_...):\n(Verrà salvato solo in locale sul tuo browser)");
+            if (token) {
+                GITHUB_TOKEN = token.trim();
+                localStorage.setItem('gh_travel_token', GITHUB_TOKEN);
+            }
+        }
+
+        function resettaToken() {
+            let conferma = confirm("Vuoi rimuovere il token attuale per inserine uno nuovo?");
+            if (conferma) {
+                localStorage.removeItem('gh_travel_token');
+                richiediToken();
+                caricaDatiDaGitHub(true);
+            }
+        }
+
+        let UTENTE_ATTIVO = localStorage.getItem('gh_travel_user');
         if (!UTENTE_ATTIVO) {
             scegliUtenteIniziale();
         }
@@ -471,7 +512,7 @@
                             <div id="body_${rId}"></div>
                             <div class="regione-add-row">
                                 <input type="text" id="input_add_${rId}" placeholder="Aggiungi città in ${regione}...">
-                                <button onclick="aggiungiCittaInRegione('${regione}', 'input_add_${rId}')">+</button>
+                                <button onclick="aggiungereCittaInRegione('${regione}', 'input_add_${rId}')">+</button>
                             </div>
                         </div>
                     </div>
@@ -512,10 +553,23 @@
         }
 
         async function caricaDatiDaGitHub(forzareRender = false) {
-            if (isSaving || !GITHUB_TOKEN) return;
+            if (isSaving) return;
+            if (!GITHUB_TOKEN) {
+                indicator.innerHTML = "🔑 Inserisci il Token";
+                indicator.style.background = "#ef4444";
+                return;
+            }
             try {
                 const urlNocache = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}?nocache=${new Date().getTime()}`;
-                let risposta = await fetch(urlNocache, { headers: { "Authorization": `token ${GITHUB_TOKEN}` } });
+                
+                let risposta = await fetch(urlNocache, { 
+                    method: "GET",
+                    headers: { 
+                        "Authorization": `token ${GITHUB_TOKEN}`,
+                        "Accept": "application/vnd.github.v3+json"
+                    },
+                    mode: "cors"
+                });
                 
                 if(risposta.ok) {
                     let jsonRes = await risposta.json();
@@ -534,12 +588,25 @@
                         indicator.innerHTML = "🟢 GitHub Sincronizzato";
                         indicator.style.background = "#10b981";
                     }
+                } else if (risposta.status === 401 || risposta.status === 403) {
+                    indicator.innerHTML = "❌ Token Non Valido o Scaduto";
+                    indicator.style.background = "#ef4444";
                 } else if (risposta.status === 404) {
-                    gestisciSalvataggioConMerge();
+                    indicator.innerHTML = "❌ Repo o File Non Trovato";
+                    indicator.style.background = "#ef4444";
+                } else {
+                    indicator.innerHTML = "⚠️ Errore API GitHub (" + risposta.status + ")";
+                    indicator.style.background = "#f59e0b";
                 }
             } catch (e) {
-                indicator.innerHTML = "⚠️ Errore Sincronizzazione";
+                console.error("Errore di rete:", e);
+                indicator.innerHTML = "⚠️ Errore Rete / Connessione";
                 indicator.style.background = "#f59e0b";
+                
+                if(localStorage.getItem('tabellone_viaggi') && Object.keys(statoGlobale).length === 0) {
+                    statoGlobale = JSON.parse(localStorage.getItem('tabellone_viaggi'));
+                    renderizzaTabellaCompleta();
+                }
             }
         }
 
@@ -614,7 +681,7 @@
             });
         }
 
-        function aggiungiCittaInRegione(regioneNome, inputId) {
+        function aggiungereCittaInRegione(regioneNome, inputId) {
             let inputField = document.getElementById(inputId);
             let nomeCitta = inputField.value.trim();
             if (nomeCitta === "") return;
@@ -708,7 +775,7 @@
                 for (const chiave of Object.keys(datiCloud)) {
                     if (!chiave.startsWith('_')) {
                         let parti = chiave.split('_');
-                        let persona = parti[parti.length - 1]; // Prende l'ultima parte (p1, p2, p3, p4)
+                        let persona = parti[parti.length - 1]; 
                         if (persona !== UTENTE_ATTIVO) {
                             statoGlobale[chiave] = datiCloud[chiave];
                         }
@@ -755,7 +822,7 @@
 
         renderizzaTabellaCompleta();
         caricaDatiDaGitHub(true);
-        setInterval(() => caricaDatiDaGitHub(false), 4000);
+        setInterval(() => caricaDatiDaGitHub(false), 15000);
     </script>
 </body>
 </html>
