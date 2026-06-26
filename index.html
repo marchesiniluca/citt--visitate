@@ -588,7 +588,7 @@
             "Lombardia": ["Milano", "Brescia", "Bergamo", "Monza", "Como", "Varese", "Pavia", "Cremona", "Mantova", "Lecco"],
             "Marche": ["Ancona", "Pesaro", "Fano", "Ascoli Piceno", "Macerata", "Civitanova Marche", "Senigallia", "Jesi"],
             "Molise": ["Campobasso", "Isernia", "Termoli", "Venafro", "Bojano", "Campomarino", "Larino", "Montenero di Bisaccia"],
-            "Piemonte": ["Torine", "Novara", "Alessandria", "Asti", "Cuneo", "Moncalieri", "Collegno", "Rivoli", "Vercelli"],
+            "Piemonte": ["Torino", "Novara", "Alessandria", "Asti", "Cuneo", "Moncalieri", "Collegno", "Rivoli", "Vercelli"],
             "Puglia": ["Bari", "Taranto", "Foggia", "Lecce", "Andria", "Barletta", "Brindisi", "Altamura", "Molfetta"],
             "Sardegna": ["Cagliari", "Sassari", "Quartu Sant'Elena", "Olbia", "Alghero", "Nuoro", "Oristano", "Carbonia"],
             "Sicilia": ["Palermo", "Catania", "Messina", "Siracusa", "Marsala", "Gela", "Ragusa", "Trapani", "Caltanissetta"],
@@ -1196,7 +1196,13 @@
                 localStorage.setItem('tabellone_viaggi', JSON.stringify(statoGlobale));
 
                 const apiWriteUrl = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`;
-                let contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(statoGlobale, null, 2))));
+                
+                // Metodo moderno e robusto per convertire in Base64 supportando caratteri speciali ed emoji
+                let stringaJson = JSON.stringify(statoGlobale, null, 2);
+                let bytes = new TextEncoder().encode(stringaJson);
+                let binString = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
+                let contentBase64 = btoa(binString);
+
                 let bodyPayload = {
                     message: `Aggiornato da Web App - v4`,
                     content: contentBase64,
