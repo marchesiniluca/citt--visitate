@@ -533,11 +533,8 @@
             branch: "main"             
         };
 
-        let GITHUB_TOKEN = localStorage.getItem('gh_travel_token');
-        if (!GITHUB_TOKEN) {
-            GITHUB_TOKEN = prompt("Inserisci il tuo GitHub Token (ghp_...):");
-            if (GITHUB_TOKEN) localStorage.setItem('gh_travel_token', GITHUB_TOKEN.trim());
-        }
+        // --- TOKEN INTEGRATO ---
+        const GITHUB_TOKEN = "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"; 
 
         let UTENTE_ATTIVO = localStorage.getItem('gh_travel_user'); 
         if (!UTENTE_ATTIVO) scegliUtenteIniziale();
@@ -553,7 +550,6 @@
         let trofeiGiaSbloccatiLocalmente = JSON.parse(localStorage.getItem('trofei_sbloccati') || '[]');
         let statoCollassatoRegioni = JSON.parse(localStorage.getItem('regioni_collassate') || '{}');
 
-        // Mappa delle regioni italiane con le rispettive icone caratteristiche
         const datiViaggi = {
             "Abruzzo": ["L'Aquila", "Pescara", "Chieti", "Teramo", "Montesilvano", "Avezzano", "Vasto", "Lanciano", "Sulmona", "Roseto degli Abruzzi"],
             "Basilicata": ["Potenza", "Matera", "Melfi", "Pisticci", "Lavello", "Rionero in Vulture", "Lauria", "Bernalda", "Venosa"],
@@ -580,8 +576,8 @@
 
         const iconeRegioni = {
             "Abruzzo": "⛰️", "Basilicata": "🪨", "Calabria": "🌶️", "Campania": "🍕", "Emilia-Romagna": "🍝",
-            "Friuli-Venezia Giulia": "🍇", "Lazio": "🏛️", "Liguria": "⛵", "Lombardia": "🏢", "Marche": "hills",
-            "Molise": "🪵", "Piemonte": "🏰", "Puglia": "☉️", "Sardegna": "🐑", "Sicilia": "🍋", "Toscana": "🍷",
+            "Friuli-Venezia Giulia": "🍇", "Lazio": "🏛️", "Liguria": "⛵", "Lombardia": "🏢", "Marche": "🏔️",
+            "Molise": "🪵", "Piemonte": "🏰", "Puglia": "☀️", "Sardegna": "🐑", "Sicilia": "🍋", "Toscana": "🍷",
             "Trentino-Alto Adige": "❄️", "Umbria": "🕊️", "Valle d'Aosta": "🎿", "Veneto": "🎭", "📌 Altre Località": "📍"
         };
 
@@ -787,7 +783,6 @@
             gestisciSalvataggioConMerge();
         }
 
-        // Sezione Strumenti Avanzati: Esportazione in Excel (CSV)
         function esportaDatiCSV() {
             let righeCSV = ["Citta;Regione;Visitatore;Data;Nota/Ricordo"];
             
@@ -818,7 +813,6 @@
             document.body.removeChild(linkAbusivo);
         }
 
-        // Sezione Strumenti Avanzati: Finestra PopUp Statistiche
         function apriFinestraStatistiche() {
             let contentBox = document.getElementById('stats-modal-content');
             contentBox.innerHTML = "";
@@ -971,7 +965,6 @@
                     if(trofeo.check(u)) {
                         vincitori.push(mappaNomiUtenti[u]);
                         
-                        // Se l'utente attivo ha appena sbloccato questo trofeo e non lo sapevamo, lanciamo i coriandoli!
                         if (u === UTENTE_ATTIVO && !trofeiGiaSbloccatiLocalmente.includes(trofeo.id)) {
                             trofeiGiaSbloccatiLocalmente.push(trofeo.id);
                             localStorage.setItem('trofei_sbloccati', JSON.stringify(trofeiGiaSbloccatiLocalmente));
@@ -1044,6 +1037,16 @@
             gestisciSalvataggioConMerge();
         }
 
+        function打包eliminaCitta(nomeCitta) {
+            if (!confirm(`Eliminare "${nomeCitta}"?`)) return;
+            if (statoGlobale["_mappaCittaExtraRegione"]) delete statoGlobale["_mappaCittaExtraRegione"][nomeCitta];
+            let safeId = generaSafeId(nomeCitta);
+            ['p1','p2','p3','p4'].forEach(p => delete statoGlobale[`${safeId}_${p}`]);
+            delete statoGlobale[`_note_${safeId}`];
+            renderizzaTabellaCompleta();
+            gestisciSalvataggioConMerge();
+        }
+        
         function eliminaCitta(nomeCitta) {
             if (!confirm(`Eliminare "${nomeCitta}"?`)) return;
             if (statoGlobale["_mappaCittaExtraRegione"]) delete statoGlobale["_mappaCittaExtraRegione"][nomeCitta];
