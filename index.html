@@ -344,10 +344,9 @@
     <div class="main-content" id="regions-container"></div>
 
     <script>
-        // CONFIGURAZIONE REPOSITORY GITHUB
         const GH_CONFIG = {
             owner: "marchesiniluca",   
-            repo: "citt--visitate",    // Nome identico a quello reale su GitHub
+            repo: "citt--visitate",    
             path: "dati.json",         
             branch: "main"             
         };
@@ -358,7 +357,7 @@
         }
 
         function richiediToken() {
-            let token = prompt("Inserisci il tuo GitHub Token (ghp_...):\n(Verrà salvato solo in locale sul tuo browser)");
+            let token = prompt("Inserisci il tuo GitHub Token (ghp_...):\n(Verrà salvato in sicurezza solo sul tuo browser)");
             if (token) {
                 GITHUB_TOKEN = token.trim();
                 localStorage.setItem('gh_travel_token', GITHUB_TOKEN);
@@ -374,7 +373,7 @@
             }
         }
 
-        let UTENTE_ATTIVO = localStorage.getItem('gh_travel_user');
+        let UTENTE_ATTIVO = localStorage.getItem('gh_travel_user'); 
         if (!UTENTE_ATTIVO) {
             scegliUtenteIniziale();
         }
@@ -589,10 +588,9 @@
                     indicator.innerHTML = "❌ Token Non Valido";
                     indicator.style.background = "#ef4444";
                 } else if (risposta.status === 404) {
-                    // Se il file non esiste ancora sul server, lo creiamo inizializzandolo
                     gestisciSalvataggioConMerge();
                 } else {
-                    indicator.innerHTML = "⚠️ Errore Servizio GitHub (" + risposta.status + ")";
+                    indicator.innerHTML = "⚠️ Errore GitHub (" + risposta.status + ")";
                     indicator.style.background = "#f59e0b";
                 }
             } catch (e) {
@@ -718,7 +716,7 @@
             }
 
             let vecchioSafeId = generaSafeId(vecchioNome);
-            let nuevoSafeId = generaSafeId(nuovoNome);
+            let nuovoSafeId = generaSafeId(nuovoNome);
 
             ['p1', 'p2', 'p3', 'p4'].forEach(p => {
                 if (statoGlobale[`${vecchioSafeId}_${p}`] !== undefined) {
