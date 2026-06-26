@@ -347,7 +347,7 @@
         // CONFIGURAZIONE REPOSITORY GITHUB
         const GH_CONFIG = {
             owner: "marchesiniluca",   
-            repo: "citt--visitate",    
+            repo: "citt--visitate",    // Nome identico a quello reale su GitHub
             path: "dati.json",         
             branch: "main"             
         };
@@ -366,7 +366,7 @@
         }
 
         function resettaToken() {
-            let conferma = confirm("Vuoi rimuovere il token attuale per inserine uno nuovo?");
+            let conferma = confirm("Vuoi rimuovere il token attuale per inserirne uno nuovo?");
             if (conferma) {
                 localStorage.removeItem('gh_travel_token');
                 richiediToken();
@@ -512,7 +512,7 @@
                             <div id="body_${rId}"></div>
                             <div class="regione-add-row">
                                 <input type="text" id="input_add_${rId}" placeholder="Aggiungi città in ${regione}...">
-                                <button onclick="aggiungereCittaInRegione('${regione}', 'input_add_${rId}')">+</button>
+                                <button onclick="aggiungiCittaInRegione('${regione}', 'input_add_${rId}')">+</button>
                             </div>
                         </div>
                     </div>
@@ -561,14 +561,11 @@
             }
             try {
                 const urlNocache = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}?nocache=${new Date().getTime()}`;
-                
                 let risposta = await fetch(urlNocache, { 
-                    method: "GET",
                     headers: { 
                         "Authorization": `token ${GITHUB_TOKEN}`,
                         "Accept": "application/vnd.github.v3+json"
-                    },
-                    mode: "cors"
+                    } 
                 });
                 
                 if(risposta.ok) {
@@ -589,20 +586,18 @@
                         indicator.style.background = "#10b981";
                     }
                 } else if (risposta.status === 401 || risposta.status === 403) {
-                    indicator.innerHTML = "❌ Token Non Valido o Scaduto";
+                    indicator.innerHTML = "❌ Token Non Valido";
                     indicator.style.background = "#ef4444";
                 } else if (risposta.status === 404) {
-                    indicator.innerHTML = "❌ Repo o File Non Trovato";
-                    indicator.style.background = "#ef4444";
+                    // Se il file non esiste ancora sul server, lo creiamo inizializzandolo
+                    gestisciSalvataggioConMerge();
                 } else {
-                    indicator.innerHTML = "⚠️ Errore API GitHub (" + risposta.status + ")";
+                    indicator.innerHTML = "⚠️ Errore Servizio GitHub (" + risposta.status + ")";
                     indicator.style.background = "#f59e0b";
                 }
             } catch (e) {
-                console.error("Errore di rete:", e);
-                indicator.innerHTML = "⚠️ Errore Rete / Connessione";
+                indicator.innerHTML = "⚠️ Errore Connessione Browser";
                 indicator.style.background = "#f59e0b";
-                
                 if(localStorage.getItem('tabellone_viaggi') && Object.keys(statoGlobale).length === 0) {
                     statoGlobale = JSON.parse(localStorage.getItem('tabellone_viaggi'));
                     renderizzaTabellaCompleta();
@@ -681,7 +676,7 @@
             });
         }
 
-        function aggiungereCittaInRegione(regioneNome, inputId) {
+        function aggiungiCittaInRegione(regioneNome, inputId) {
             let inputField = document.getElementById(inputId);
             let nomeCitta = inputField.value.trim();
             if (nomeCitta === "") return;
@@ -723,7 +718,7 @@
             }
 
             let vecchioSafeId = generaSafeId(vecchioNome);
-            let nuovoSafeId = generaSafeId(nuovoNome);
+            let nuevoSafeId = generaSafeId(nuovoNome);
 
             ['p1', 'p2', 'p3', 'p4'].forEach(p => {
                 if (statoGlobale[`${vecchioSafeId}_${p}`] !== undefined) {
@@ -822,7 +817,7 @@
 
         renderizzaTabellaCompleta();
         caricaDatiDaGitHub(true);
-        setInterval(() => caricaDatiDaGitHub(false), 15000);
+        setInterval(() => caricaDatiDaGitHub(false), 8000);
     </script>
 </body>
 </html>
