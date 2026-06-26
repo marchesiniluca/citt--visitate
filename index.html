@@ -114,17 +114,23 @@
         }
         .btn-header-tool:hover { background: rgba(255,255,255,0.3); }
 
-        #user-badge {
+        .badges-row {
+            display: flex;
+            gap: 10px;
             margin-top: 12px;
+        }
+
+        .header-badge-btn {
             font-size: 12px;
             padding: 5px 15px;
             border-radius: 20px;
             background: rgba(255,255,255,0.1);
             cursor: pointer;
             border: 1px dashed rgba(255,255,255,0.3);
+            color: white;
             transition: background 0.2s;
         }
-        #user-badge:hover { background: rgba(255,255,255,0.2); }
+        .header-badge-btn:hover { background: rgba(255,255,255,0.2); }
         
         .top-sticky-container {
             position: sticky;
@@ -441,6 +447,7 @@
             .col-citta { font-size: 12px; flex-direction: column; align-items: flex-start; }
             input[type="checkbox"] { transform: scale(1.1); }
             .regione-add-row { padding: 10px; }
+            .badges-row { flex-direction: column; align-items: center; gap: 6px; }
         }
     </style>
 </head>
@@ -457,7 +464,10 @@
             <button class="btn-header-tool" onclick="esportaDatiCSV()">📥 Esporta Diario (Excel)</button>
         </div>
 
-        <div id="user-badge" onclick="cambiaUtenteAttivo()">👤 Accesso come: <strong id="current-user-label">Seleziona...</strong> (Clicca per cambiare)</div>
+        <div class="badges-row">
+            <button id="user-badge" class="header-badge-btn" onclick="cambiaUtenteAttivo()">👤 Accesso come: <strong id="current-user-label">Seleziona...</strong> (Clicca per cambiare)</button>
+            <button id="token-badge" class="header-badge-btn" style="border-color:#f59e0b;" onclick="apriImpostazioniToken()">🔑 Configura GitHub Token</button>
+        </div>
     </div>
 
     <div class="top-sticky-container">
@@ -491,6 +501,22 @@
     <div class="trophy-section">
         <div class="trophy-title">🏆 Bacheca dei Trofei di Gruppo</div>
         <div class="trophy-grid" id="trophy-layout"></div>
+    </div>
+
+    <div class="modal-overlay" id="token-modal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="chiudiImpostazioniToken()">×</button>
+            <div class="modal-title">🔑 Configurazione GitHub Token</div>
+            <p style="font-size: 12px; opacity: 0.8; margin-bottom: 15px;">Inserisci il tuo Personal Access Token di GitHub per attivare il salvataggio automatico sul Cloud.</p>
+            <div class="modal-field">
+                <label>GitHub Personal Access Token (classic o fine-grained)</label>
+                <input type="password" id="token-input-field" placeholder="Incolla il token ghp_...">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-modal" style="background:#edf2f7; color:#333;" onclick="chiudiImpostazioniToken()">Annulla</button>
+                <button class="btn-modal btn-modal-save" onclick="salvaGitHubToken()">Salva Token</button>
+            </div>
+        </div>
     </div>
 
     <div class="modal-overlay" id="diary-modal">
@@ -533,8 +559,8 @@
             branch: "main"             
         };
 
-        // --- TOKEN INTEGRATO ---
-        const GITHUB_TOKEN = "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"; 
+        // Caricamento dinamico del token salvato dall'utente localmente
+        let GITHUB_TOKEN = localStorage.getItem('gh_travel_token') || ""; 
 
         let UTENTE_ATTIVO = localStorage.getItem('gh_travel_user'); 
         if (!UTENTE_ATTIVO) scegliUtenteIniziale();
@@ -596,6 +622,39 @@
         function cambiaUtenteAttivo() {
             scegliUtenteIniziale();
             renderizzaTabellaCompleta();
+        }
+
+        function apriImpostazioniToken() {
+            document.getElementById('token-input-field').value = GITHUB_TOKEN;
+            document.getElementById('token-modal').style.display = 'flex';
+        }
+
+        function chiudiImpostazioniToken() {
+            document.getElementById('token-modal').style.display = 'none';
+        }
+
+        function salvaGitHubToken() {
+            let inputVal = document.getElementById('token-input-field').value.trim();
+            GITHUB_TOKEN = inputVal;
+            localStorage.setItem('gh_travel_token', inputVal);
+            chiudiImpostazioniToken();
+            verificaPresenzaTokenVisuale();
+            caricaDatiDaGitHub(true);
+        }
+
+        function verificaPresenzaTokenVisuale() {
+            let tBadge = document.getElementById('token-badge');
+            if(!GITHUB_TOKEN) {
+                tBadge.style.borderColor = "#ef4444";
+                tBadge.style.color = "#ff8a8a";
+                tBadge.innerHTML = "⚠️ Token mancante!";
+                indicator.innerHTML = "🔑 Inserisci Token";
+                indicator.style.background = "#ef4444";
+            } else {
+                tBadge.style.borderColor = "#10b981";
+                tBadge.style.color = "#a7f3d0";
+                tBadge.innerHTML = "🔒 Token Configurato";
+            }
         }
 
         function selezionaUtenteCard(idPersona) {
@@ -728,6 +787,7 @@
             }
 
             aggiornaSchermata();
+            verificaPresenzaTokenVisuale();
         }
 
         function generaSafeId(citta) {
@@ -871,6 +931,9 @@
                         indicator.innerHTML = "🟢 Sincronizzato";
                         indicator.style.background = "#10b981";
                     }
+                } else if(risposta.status === 401 || risposta.status === 403) {
+                    indicator.innerHTML = "❌ Token Invalido";
+                    indicator.style.background = "#ef4444";
                 }
             } catch (e) {
                 indicator.innerHTML = "⚠️ Errore Cloud";
@@ -1036,16 +1099,6 @@
             renderizzaTabellaCompleta();
             gestisciSalvataggioConMerge();
         }
-
-        function打包eliminaCitta(nomeCitta) {
-            if (!confirm(`Eliminare "${nomeCitta}"?`)) return;
-            if (statoGlobale["_mappaCittaExtraRegione"]) delete statoGlobale["_mappaCittaExtraRegione"][nomeCitta];
-            let safeId = generaSafeId(nomeCitta);
-            ['p1','p2','p3','p4'].forEach(p => delete statoGlobale[`${safeId}_${p}`]);
-            delete statoGlobale[`_note_${safeId}`];
-            renderizzaTabellaCompleta();
-            gestisciSalvataggioConMerge();
-        }
         
         function eliminaCitta(nomeCitta) {
             if (!confirm(`Eliminare "${nomeCitta}"?`)) return;
@@ -1060,7 +1113,7 @@
         function modificaCitta(vecchioNome) {
             let nuovoNome = prompt(`Modifica il nome:`, vecchioNome);
             if (!nuovoNome || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
-            nuovoNome = nuovoNome.trim();
+            nuovoNome = nuevoNome.trim();
 
             if (statoGlobale["_mappaCittaExtraRegione"]) {
                 let r = statoGlobale["_mappaCittaExtraRegione"][vecchioNome];
@@ -1087,6 +1140,11 @@
         }
 
         function salvaCambio(cittaId, persona, checked) {
+            if(!GITHUB_TOKEN) {
+                alert("Attenzione: Inserisci prima un GitHub Token valido cliccando sul pulsante giallo in alto per salvare le modifiche!");
+                renderizzaTabellaCompleta();
+                return;
+            }
             statoGlobale[`${cittaId}_${persona}`] = checked;
             let row = document.getElementById(`row_${cittaId}`);
             if(row) {
