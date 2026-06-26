@@ -129,5 +129,8 @@
   "pisa_p2": true,
   "pistoia_p2": true,
   "poggibonsi_p2": true,
-  "san_gimignano_p2": true
+  "san_gimignano_p2": true,
+  "_mappaCittaExtraRegione": {
+    "Forte dei marmi": "Toscana"
+  }
 }
