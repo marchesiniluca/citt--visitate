@@ -139,7 +139,7 @@
     "Tenno": "Trentino-Alto Adige",
     "Braid": "Trentino-Alto Adige",
     "Andalo": "Trentino-Alto Adige",
-    "Però": "Trentino-Alto Adige"
+    "PerÃ²": "Trentino-Alto Adige"
   },
   "viareggio_p2": true,
   "volterra_p2": true,
@@ -161,5 +161,6 @@
   "trento_p2": true,
   "vipiteno_p2": true,
   "tenno_p2": true,
-  "smarano_p2": true
+  "smarano_p2": true,
+  "pera__p2": true
 }
