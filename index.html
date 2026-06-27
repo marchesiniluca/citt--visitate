@@ -3,17 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tabellone Viaggi Italia v6.3</title>
+    <title>Tabellone Viaggi Italia v6</title>
     
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Viaggi Italia">
-    
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Tabellone%20Viaggi%20Italia%22,%22short_name%22:%22Viaggi%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%232f4f4f%22,%22theme_color%22:%22%232f4f4f%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/201/201623.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
-    
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/201/201623.png">
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/201/201623.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
     <style>
         :root {
@@ -420,13 +412,12 @@
     <div class="header-container">
         <button id="btn-dark-mode" onclick="toggleDarkMode()">🌙</button>
         <div class="header-titolo">✈️ Città Visitate d'Italia</div>
-        <div class="subtitle">Tabellone Condiviso e Sincronizzato v6.3</div>
+        <div class="subtitle">Tabellone Condiviso e Sincronizzato v6</div>
         <div id="status-indicator">⏳ Avvio...</div>
 
         <div class="badges-row">
             <button id="user-badge" class="header-badge-btn" onclick="apriCambioUtenteModal()">👤 Accesso come: <strong id="current-user-label">Seleziona...</strong> (Clicca per cambiare)</button>
             <button id="token-badge" class="header-badge-btn" style="border-color:#f59e0b;" onclick="apriImpostazioniToken()">🔑 Configura GitHub Token</button>
-            <button id="install-badge" class="header-badge-btn" style="border-color:#3b82f6; display:none;" onclick="triggerInstallApp()">📲 Installa sulla Home</button>
         </div>
     </div>
 
@@ -518,7 +509,7 @@
         <div class="modal-box">
             <button class="modal-close" onclick="chiudiAlertToken()">×</button>
             <div class="modal-title" style="color:#ef4444;">⚠️ Token Richiesto</div>
-            <p style="font-size: 14px;">Attenzione: Inserisci prima un GitHub Token valido cliccando sul pompante giallo in alto per salvare le modifiche!</p>
+            <p style="font-size: 14px;">Attenzione: Inserisci prima un GitHub Token valido cliccando sul pulsante giallo in alto per salvare le modifiche!</p>
             <div class="modal-buttons">
                 <button class="btn-modal btn-modal-save" onclick="chiudiAlertToken()">OK</button>
             </div>
@@ -541,10 +532,8 @@
         let statoGlobale = {};
         let currentSha = null; 
         let isSaving = false;
-        let salvataggioInCoda = false;
         let filtroSelezionato = 'all'; 
         let cittaSelezionataPerDiario = null;
-        let deferredPrompt; // Per l'installazione nativa
         let statoCollassatoRegioni = JSON.parse(localStorage.getItem('regioni_collassate') || '{}');
 
         const datiViaggi = {
@@ -580,34 +569,6 @@
 
         const mappaNomiUtenti = { p1: "Luca", p2: "Elena", p3: "Alessia", p4: "Filippo" };
 
-        // GESTIONE PROMPT DI INSTALLAZIONE SCHERMATA HOME
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('install-badge').style.display = 'inline-block';
-        });
-
-        function triggerInstallApp() {
-            if (!deferredPrompt) {
-                alert("Per installare l'app su iPhone/iOS:\n1. Premi il tasto 'Condividi' (quadrato con freccia in alto)\n2. Scorri in basso e seleziona 'Aggiungi alla schermata Home'.");
-                return;
-            }
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    document.getElementById('install-badge').style.display = 'none';
-                }
-                deferredPrompt = null;
-            });
-        }
-
-        // REGISTRAZIONE SERVICE WORKER AUTOMATICO (Fittizio in linea per far scattare l'installazione)
-        if ('serviceWorker' in navigator) {
-            const swCode = `self.addEventListener('fetch', function(e) { /* Passthrough */ });`;
-            const blob = new Blob([swCode], { type: 'application/javascript' });
-            navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
-        }
-
         window.addEventListener('DOMContentLoaded', () => {
             if (!UTENTE_ATTIVO) {
                 apriCambioUtenteModal();
@@ -627,7 +588,6 @@
             localStorage.setItem('gh_travel_user', UTENTE_ATTIVO);
             document.getElementById('user-modal').style.display = 'none';
             renderizzaTabellaCompleta();
-            caricaDatiDaGitHub(true);
         }
 
         function apriImpostazioniToken() {
@@ -1012,7 +972,7 @@
         function modificaCitta(vecchioNome) {
             let nuovoNome = prompt(`Modifica il nome:`, vecchioNome);
             if (!nuovoNome || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
-            nuovoNome = nuovoNome.trim();
+            nuovoNome = nuevoNome.trim();
 
             if (statoGlobale["_mappaCittaExtraRegione"]) {
                 let r = statoGlobale["_mappaCittaExtraRegione"][vecchioNome];
@@ -1051,19 +1011,12 @@
                 setTimeout(() => row.classList.remove('row-saving-flash'), 700);
             }
             aggiornaSchermata();
-            
-            if (isSaving) {
-                salvataggioInCoda = true;
-            } else {
-                gestisciSalvataggioConMerge();
-            }
+            gestisciSalvataggioConMerge();
         }
 
         async function gestisciSalvataggioConMerge() {
             if (!GITHUB_TOKEN || isSaving) return;
             isSaving = true;
-            salvataggioInCoda = false; 
-            
             indicator.innerHTML = "🔄 In sincronizzazione...";
             indicator.style.background = "#3b82f6";
 
@@ -1109,7 +1062,7 @@
                 let contentBase64 = btoa(binString);
 
                 let bodyPayload = {
-                    message: `Aggiornato da Web App - v6.3`,
+                    message: `Aggiornato da Web App - v6`,
                     content: contentBase64
                 };
                 if (currentSha) bodyPayload.sha = currentSha;
@@ -1125,12 +1078,6 @@
                     currentSha = jsonResPut.content.sha;
                     indicator.innerHTML = "🟢 Sincronizzato";
                     indicator.style.background = "#10b981";
-                } else if (rispostaPut.status === 409) {
-                    console.warn("Conflitto rilevato (409). Riprovo l'unione dei dati...");
-                    isSaving = false;
-                    await caricaDatiDaGitHub(true); 
-                    isSaving = true; 
-                    salvataggioInCoda = true; 
                 } else {
                     let errDettaglio = await rispostaPut.text();
                     console.error("Risposta di errore da GitHub:", errDettaglio);
@@ -1144,10 +1091,6 @@
             } finally {
                 isSaving = false;
                 aggiornaSchermata();
-                
-                if (salvataggioInCoda) {
-                    setTimeout(() => { gestisciSalvataggioConMerge(); }, 300);
-                }
             }
         }
 
