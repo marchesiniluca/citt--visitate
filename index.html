@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tabellone Viaggi Italia v6.1</title>
+    <title>Tabellone Viaggi Italia v6.2</title>
     <style>
         :root {
             --primary-color: #2f4f4f;
@@ -409,7 +409,7 @@
     <div class="header-container">
         <button id="btn-dark-mode" onclick="toggleDarkMode()">🌙</button>
         <div class="header-titolo">✈️ Città Visitate d'Italia</div>
-        <div class="subtitle">Tabellone Condiviso e Sincronizzato v6.1</div>
+        <div class="subtitle">Tabellone Condiviso e Sincronizzato v6.2</div>
         <div id="status-indicator">⏳ Avvio...</div>
 
         <div class="badges-row">
@@ -529,6 +529,7 @@
         let statoGlobale = {};
         let currentSha = null; 
         let isSaving = false;
+        let salvataggioInCoda = false;
         let filtroSelezionato = 'all'; 
         let cittaSelezionataPerDiario = null;
         let statoCollassatoRegioni = JSON.parse(localStorage.getItem('regioni_collassate') || '{}');
@@ -585,7 +586,7 @@
             localStorage.setItem('gh_travel_user', UTENTE_ATTIVO);
             document.getElementById('user-modal').style.display = 'none';
             renderizzaTabellaCompleta();
-            caricaDatiDaGitHub(true); // Risolto il bug del caricamento iniziale asincrono
+            caricaDatiDaGitHub(true);
         }
 
         function apriImpostazioniToken() {
@@ -1009,12 +1010,19 @@
                 setTimeout(() => row.classList.remove('row-saving-flash'), 700);
             }
             aggiornaSchermata();
-            gestisciSalvataggioConMerge();
+            
+            if (isSaving) {
+                salvataggioInCoda = true;
+            } else {
+                gestisciSalvataggioConMerge();
+            }
         }
 
         async function gestisciSalvataggioConMerge() {
             if (!GITHUB_TOKEN || isSaving) return;
             isSaving = true;
+            salvataggioInCoda = false; 
+            
             indicator.innerHTML = "🔄 In sincronizzazione...";
             indicator.style.background = "#3b82f6";
 
@@ -1029,20 +1037,17 @@
                     datiCloud = JSON.parse(atob(jsonRes.content));
                 }
 
-                // Unione sicura delle città extra aggiunte da altri client
                 if (datiCloud["_mappaCittaExtraRegione"]) {
                     if (!statoGlobale["_mappaCittaExtraRegione"]) statoGlobale["_mappaCittaExtraRegione"] = {};
                     statoGlobale["_mappaCittaExtraRegione"] = { ...datiCloud["_mappaCittaExtraRegione"], ...statoGlobale["_mappaCittaExtraRegione"] };
                 }
 
-                // Unione delle note/diari scritti da altri
                 for (const chiave of Object.keys(datiCloud)) {
                     if (chiave.startsWith('_note_') && !statoGlobale[chiave]) {
                         statoGlobale[chiave] = datiCloud[chiave];
                     }
                 }
 
-                // Sincronizzazione atomica dello stato dei checkbox degli altri utenti
                 for (const chiave of Object.keys(datiCloud)) {
                     if (!chiave.startsWith('_')) {
                         let parti = chiave.split('_');
@@ -1063,7 +1068,7 @@
                 let contentBase64 = btoa(binString);
 
                 let bodyPayload = {
-                    message: `Aggiornato da Web App - v6.1`,
+                    message: `Aggiornato da Web App - v6.2`,
                     content: contentBase64
                 };
                 if (currentSha) bodyPayload.sha = currentSha;
@@ -1079,6 +1084,12 @@
                     currentSha = jsonResPut.content.sha;
                     indicator.innerHTML = "🟢 Sincronizzato";
                     indicator.style.background = "#10b981";
+                } else if (rispostaPut.status === 409) {
+                    console.warn("Conflitto rilevato (409). Riprovo l'unione dei dati...");
+                    isSaving = false;
+                    await caricaDatiDaGitHub(true); 
+                    isSaving = true; 
+                    salvataggioInCoda = true; 
                 } else {
                     let errDettaglio = await rispostaPut.text();
                     console.error("Risposta di errore da GitHub:", errDettaglio);
@@ -1092,6 +1103,10 @@
             } finally {
                 isSaving = false;
                 aggiornaSchermata();
+                
+                if (salvataggioInCoda) {
+                    setTimeout(() => { gestisciSalvataggioConMerge(); }, 300);
+                }
             }
         }
 
