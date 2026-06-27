@@ -4,16 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tabellone Viaggi Italia v6</title>
-    
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✈️</text></svg>">
-    
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%231f3a3a%22/><text x=%2215%22 y=%2275%22 font-size=%2270%22>✈️</text></svg>">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Viaggi Italia">
-    <meta name="mobile-web-app-capable" content="yes">
-
     <style>
         :root {
             --primary-color: #2f4f4f;
@@ -104,29 +94,10 @@
             transition: all 0.3s ease;
         }
 
-        .header-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .btn-header-tool {
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-header-tool:hover { background: rgba(255,255,255,0.3); }
-
         .badges-row {
             display: flex;
             gap: 10px;
-            margin-top: 12px;
+            margin-top: 15px;
         }
 
         .header-badge-btn {
@@ -412,10 +383,6 @@
         .btn-modal-save { background: var(--secondary-color); color: white; }
         .btn-modal-save:hover { background: #007777; }
 
-        /* Stile Statistiche */
-        .stats-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
-        .stats-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
-
         .row-saving-flash { animation: flashGreen 0.6s ease; }
         @keyframes flashGreen {
             0% { background-color: transparent; }
@@ -426,7 +393,6 @@
         @media (max-width: 768px) { 
             #status-indicator { position: static; margin-top: 10px; display: inline-block; }
             #btn-dark-mode { position: static; margin-bottom: 5px; }
-            .header-buttons { flex-wrap: wrap; justify-content: center; }
             .dashboard { gap: 6px; }
             .stat-score { font-size: 18px; }
             .stat-name { font-size: 12px; }
@@ -445,11 +411,6 @@
         <div class="header-titolo">✈️ Città Visitate d'Italia</div>
         <div class="subtitle">Tabellone Condiviso e Sincronizzato v6</div>
         <div id="status-indicator">⏳ Avvio...</div>
-        
-        <div class="header-buttons">
-            <button class="btn-header-tool" onclick="apriFinestraStatistiche()">📊 Vedi Statistiche</button>
-            <button class="btn-header-tool" onclick="esportaDatiCSV()">📥 Esporta Diario (Excel)</button>
-        </div>
 
         <div class="badges-row">
             <button id="user-badge" class="header-badge-btn" onclick="apriCambioUtenteModal()">👤 Accesso come: <strong id="current-user-label">Seleziona...</strong> (Clicca per cambiare)</button>
@@ -530,24 +491,13 @@
             </div>
             <div class="modal-field">
                 <label>Note e ricordi di viaggio</label>
-                <textarea id="diary-text" rows="4" placeholder="Cosa avete visto di bello? Where avete mangiato?"></textarea>
+                <textarea id="diary-text" rows="4" placeholder="Cosa avete visto di bello? Dove avete mangiato?"></textarea>
             </div>
             <div style="font-size: 11px; color: var(--text-light); margin-bottom: 10px;" id="diary-author-info"></div>
             <div class="modal-buttons">
                 <button class="btn-modal" style="background:#e53e3e; color:white; margin-right:auto;" onclick="cancellaDiarioCitta()">Elimina ricordo</button>
                 <button class="btn-modal" style="background:#edf2f7; color:#333;" onclick="chiudiDiario()">Annulla</button>
                 <button class="btn-modal btn-modal-save" onclick="salvaDiarioCitta()">Salva Diario</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="stats-modal">
-        <div class="modal-box">
-            <button class="modal-close" onclick="chiudiStatistiche()">×</button>
-            <div class="modal-title">📊 Resoconto Statistiche</div>
-            <div class="stats-list" id="stats-modal-content"></div>
-            <div class="modal-buttons">
-                <button class="btn-modal btn-modal-save" onclick="chiudiStatistiche()">Chiudi</button>
             </div>
         </div>
     </div>
@@ -584,7 +534,6 @@
         let cittaSelezionataPerDiario = null;
         let statoCollassatoRegioni = JSON.parse(localStorage.getItem('regioni_collassate') || '{}');
 
-        // Database esteso con almeno 30 importanti località per ciascuna delle 20 regioni italiane
         const datiViaggi = {
             "Abruzzo": ["L'Aquila", "Pescara", "Chieti", "Teramo", "Montesilvano", "Avezzano", "Vasto", "Lanciano", "Sulmona", "Roseto degli Abruzzi", "Ortona", "Frascati", "Giulianova", "Atri", "Celano", "Alfedena", "Pescasseroli", "Roccaraso", "Scanno", "Tagliacozzo", "Campli", "Castelli", "Guardiagrele", "Penne", "Alba Fucens", "Civitella del Tronto", "Santo Stefano di Sessanio", "Rocca Calascio", "Anversa degli Abruzzi", "Pineto", "Silvi"],
             "Basilicata": ["Potenza", "Matera", "Melfi", "Pisticci", "Lavello", "Rionero in Vulture", "Lauria", "Bernalda", "Venosa", "Avigliano", "Policoro", "Montalbano Jonico", "Ferrandina", "Maratea", "Tricarico", "Senise", "Nova Siri", "Lagonegro", "Sant'Arcangelo", "Rotonda", "Viggiano", "Acerenza", "Castelmezzano", "Pietrapertosa", "Craco", "Aliano", "Metaponto", "Irsina", "Moliterno", "Stigliano"],
@@ -866,78 +815,18 @@
             gestisciSalvataggioConMerge();
         }
 
-        function esportaDatiCSV() {
-            let righeCSV = ["Citta;Regione;Visitatore;Data;Nota/Ricordo"];
-            
-            document.querySelectorAll('.citta-row').forEach(row => {
-                let safeId = row.id.replace('row_', '');
-                let nomeCitta = row.querySelector('.col-citta span').innerText.trim();
-                let cardRegione = row.closest('.regione-card').querySelector('.regione-header-left strong').innerText;
-                
-                let chiHaVisitato = [];
-                ['p1','p2','p3','p4'].forEach(p => {
-                    if (statoGlobale[`${safeId}_${p}`] === true) chiHaVisitato.push(mappaNomiUtenti[p]);
-                });
-
-                let notaObj = statoGlobale[`_note_${safeId}`] || { date: "-", text: "-" };
-                let visitatoriStr = chiHaVisitato.length > 0 ? chiHaVisitato.join(" & ") : "Nessuno";
-                
-                let notaPulita = (notaObj.text || "-").replace(/;/g, ",").replace(/\n/g, " ");
-                righeCSV.push(`"${nomeCitta}";"${cardRegione}";"${visitatoriStr}";"${notaObj.date || "-"}";"${notaPulita}"`);
-            });
-
-            let csvContenuto = "data:text/csv;charset=utf-8,\uFEFF" + righeCSV.join("\n");
-            let encodedUri = encodeURI(csvContenuto);
-            let linkAbusivo = document.createElement("a");
-            linkAbusivo.setAttribute("href", encodedUri);
-            linkAbusivo.setAttribute("download", "diario_viaggi_italia.csv");
-            document.body.appendChild(linkAbusivo);
-            linkAbusivo.click();
-            document.body.removeChild(linkAbusivo);
-        }
-
-        function apriFinestraStatistiche() {
-            let contentBox = document.getElementById('stats-modal-content');
-            contentBox.innerHTML = "";
-
-            let totali = { p1:0, p2:0, p3:0, p4:0 };
-            let totaleCittaContate = 0;
-            let diGruppo = 0;
-
-            document.querySelectorAll('.citta-row').forEach(row => {
-                totaleCittaContate++;
-                let safeId = row.id.replace('row_', '');
-                let v1 = statoGlobale[`${safeId}_p1`]||false;
-                let v2 = statoGlobale[`${safeId}_p2`]||false;
-                let v3 = statoGlobale[`${safeId}_p3`]||false;
-                let v4 = statoGlobale[`${safeId}_p4`]||false;
-
-                if(v1) totali.p1++; if(v2) totali.p2++; if(v3) totali.p3++; if(v4) totali.p4++;
-                if(v1 && v2 && v3 && v4) diGruppo++;
-            });
-
-            let html = `
-                <div class="stats-row"><strong>Città inserite a database:</strong> <span>${totaleCittaContate}</span></div>
-                <div class="stats-row"><strong>Viaggi di gruppo (tutti e 4 insieme):</strong> <span style="color:var(--secondary-color); font-weight:bold;">${diGruppo} città</span></div>
-                <hr style="border:0; border-top:1px solid var(--border-color); margin: 8px 0;">
-                <div class="stats-row">👤 Luca: <span>${totali.p1} città visitate</span></div>
-                <div class="stats-row">👤 Elena: <span>${totali.p2} città visitate</span></div>
-                <div class="stats-row">👤 Alessia: <span>${totali.p3} città visitate</span></div>
-                <div class="stats-row">👤 Filippo: <span>${totali.p4} città visitate</span></div>
-            `;
-            contentBox.innerHTML = html;
-            document.getElementById('stats-modal').style.display = 'flex';
-        }
-
-        function chiudiStatistiche() {
-            document.getElementById('stats-modal').style.display = 'none';
-        }
-
         async function caricaDatiDaGitHub(forzareRender = false) {
             if (isSaving || !GITHUB_TOKEN) return;
             try {
                 const urlNocache = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}?nocache=${new Date().getTime()}`;
                 let risposta = await fetch(urlNocache, { headers: { "Authorization": `Bearer ${GITHUB_TOKEN}` } });
+                
+                if (risposta.status === 404) {
+                    currentSha = null;
+                    if (forzareRender) renderizzaTabellaCompleta();
+                    return;
+                }
+
                 if(risposta.ok) {
                     let jsonRes = await risposta.json();
                     currentSha = jsonRes.sha;
@@ -959,8 +848,7 @@
                     indicator.style.background = "#ef4444";
                 }
             } catch (e) {
-                indicator.innerHTML = "⚠️ Errore Cloud";
-                indicator.style.background = "#f59e0b";
+                console.error("Errore nel caricamento:", e);
             }
         }
 
@@ -1125,7 +1013,7 @@
         }
 
         async function gestisciSalvataggioConMerge() {
-            if (!GITHUB_TOKEN) return;
+            if (!GITHUB_TOKEN || isSaving) return;
             isSaving = true;
             indicator.innerHTML = "🔄 In sincronizzazione...";
             indicator.style.background = "#3b82f6";
@@ -1189,8 +1077,12 @@
                     currentSha = jsonResPut.content.sha;
                     indicator.innerHTML = "🟢 Sincronizzato";
                     indicator.style.background = "#10b981";
+                } else {
+                    indicator.innerHTML = "❌ Errore Cloud";
+                    indicator.style.background = "#ef4444";
                 }
             } catch (e) {
+                console.error("Errore nel salvataggio:", e);
                 indicator.innerHTML = "❌ Errore Cloud";
                 indicator.style.background = "#ef4444";
             } finally {
@@ -1203,7 +1095,11 @@
             try { statoGlobale = JSON.parse(localStorage.getItem('tabellone_viaggi')); } catch(e){}
         }
 
-        setInterval(() => caricaDatiDaGitHub(false), 4000);
+        setInterval(() => {
+            if (!isSaving) {
+                caricaDatiDaGitHub(false);
+            }
+        }, 5000);
     </script>
 </body>
 </html>
