@@ -517,8 +517,7 @@
         const GH_CONFIG = {
             owner: "marchesiniluca",   
             repo: "citt--visitate",    
-            path: "dati.json",         
-            branch: "main"             
+            path: "dati.json"
         };
 
         let GITHUB_TOKEN = localStorage.getItem('gh_travel_token') || ""; 
@@ -946,6 +945,15 @@
             document.getElementById('search-counter-label').innerText = `Città filtrate: ${visibiliContatore}`;
         }
 
+        function cambiaFiltroVisualizzazione(tipo) {
+            filtroSelezionato = tipo;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            if(tipo === 'all') document.getElementById('flt-all').classList.add('active');
+            if(tipo === 'group') document.getElementById('flt-group').classList.add('active');
+            if(tipo === 'none') document.getElementById('flt-none').classList.add('active');
+            filtraCitta();
+        }
+
         function aggiungiCittaInRegione(regioneNome, inputId) {
             let inputField = document.getElementById(inputId);
             let nomeCitta = inputField.value.trim();
@@ -970,7 +978,7 @@
         function modificaCitta(vecchioNome) {
             let nuovoNome = prompt(`Modifica il nome:`, vecchioNome);
             if (!nuovoNome || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
-            nuovoNome = nuovoNome.trim();
+            nuovoNome = nuevoNome.trim();
 
             if (statoGlobale["_mappaCittaExtraRegione"]) {
                 let r = statoGlobale["_mappaCittaExtraRegione"][vecchioNome];
@@ -1061,8 +1069,7 @@
 
                 let bodyPayload = {
                     message: `Aggiornato da Web App - v6`,
-                    content: contentBase64,
-                    branch: GH_CONFIG.branch
+                    content: contentBase64
                 };
                 if (currentSha) bodyPayload.sha = currentSha;
 
@@ -1078,6 +1085,8 @@
                     indicator.innerHTML = "🟢 Sincronizzato";
                     indicator.style.background = "#10b981";
                 } else {
+                    let errDettaglio = await rispostaPut.text();
+                    console.error("Risposta di errore da GitHub:", errDettaglio);
                     indicator.innerHTML = "❌ Errore Cloud";
                     indicator.style.background = "#ef4444";
                 }
