@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tabellone Viaggi Italia v6</title>
+    <title>Tabellone Viaggi Italia v6.1</title>
     <style>
         :root {
             --primary-color: #2f4f4f;
@@ -409,7 +409,7 @@
     <div class="header-container">
         <button id="btn-dark-mode" onclick="toggleDarkMode()">🌙</button>
         <div class="header-titolo">✈️ Città Visitate d'Italia</div>
-        <div class="subtitle">Tabellone Condiviso e Sincronizzato v6</div>
+        <div class="subtitle">Tabellone Condiviso e Sincronizzato v6.1</div>
         <div id="status-indicator">⏳ Avvio...</div>
 
         <div class="badges-row">
@@ -506,7 +506,7 @@
         <div class="modal-box">
             <button class="modal-close" onclick="chiudiAlertToken()">×</button>
             <div class="modal-title" style="color:#ef4444;">⚠️ Token Richiesto</div>
-            <p style="font-size: 14px;">Attenzione: Inserisci prima un GitHub Token valido cliccando sul pulsante giallo in alto per salvare le modifiche!</p>
+            <p style="font-size: 14px;">Attenzione: Inserisci prima un GitHub Token valido cliccando sul pompante giallo in alto per salvare le modifiche!</p>
             <div class="modal-buttons">
                 <button class="btn-modal btn-modal-save" onclick="chiudiAlertToken()">OK</button>
             </div>
@@ -585,6 +585,7 @@
             localStorage.setItem('gh_travel_user', UTENTE_ATTIVO);
             document.getElementById('user-modal').style.display = 'none';
             renderizzaTabellaCompleta();
+            caricaDatiDaGitHub(true); // Risolto il bug del caricamento iniziale asincrono
         }
 
         function apriImpostazioniToken() {
@@ -945,15 +946,6 @@
             document.getElementById('search-counter-label').innerText = `Città filtrate: ${visibiliContatore}`;
         }
 
-        function cambiaFiltroVisualizzazione(tipo) {
-            filtroSelezionato = tipo;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            if(tipo === 'all') document.getElementById('flt-all').classList.add('active');
-            if(tipo === 'group') document.getElementById('flt-group').classList.add('active');
-            if(tipo === 'none') document.getElementById('flt-none').classList.add('active');
-            filtraCitta();
-        }
-
         function aggiungiCittaInRegione(regioneNome, inputId) {
             let inputField = document.getElementById(inputId);
             let nomeCitta = inputField.value.trim();
@@ -978,7 +970,7 @@
         function modificaCitta(vecchioNome) {
             let nuovoNome = prompt(`Modifica il nome:`, vecchioNome);
             if (!nuovoNome || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
-            nuovoNome = nuevoNome.trim();
+            nuovoNome = nuovoNome.trim();
 
             if (statoGlobale["_mappaCittaExtraRegione"]) {
                 let r = statoGlobale["_mappaCittaExtraRegione"][vecchioNome];
@@ -1037,17 +1029,20 @@
                     datiCloud = JSON.parse(atob(jsonRes.content));
                 }
 
+                // Unione sicura delle città extra aggiunte da altri client
                 if (datiCloud["_mappaCittaExtraRegione"]) {
                     if (!statoGlobale["_mappaCittaExtraRegione"]) statoGlobale["_mappaCittaExtraRegione"] = {};
                     statoGlobale["_mappaCittaExtraRegione"] = { ...datiCloud["_mappaCittaExtraRegione"], ...statoGlobale["_mappaCittaExtraRegione"] };
                 }
 
+                // Unione delle note/diari scritti da altri
                 for (const chiave of Object.keys(datiCloud)) {
                     if (chiave.startsWith('_note_') && !statoGlobale[chiave]) {
                         statoGlobale[chiave] = datiCloud[chiave];
                     }
                 }
 
+                // Sincronizzazione atomica dello stato dei checkbox degli altri utenti
                 for (const chiave of Object.keys(datiCloud)) {
                     if (!chiave.startsWith('_')) {
                         let parti = chiave.split('_');
@@ -1068,7 +1063,7 @@
                 let contentBase64 = btoa(binString);
 
                 let bodyPayload = {
-                    message: `Aggiornato da Web App - v6`,
+                    message: `Aggiornato da Web App - v6.1`,
                     content: contentBase64
                 };
                 if (currentSha) bodyPayload.sha = currentSha;
