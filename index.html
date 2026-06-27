@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tabellone Viaggi Italia v6</title>
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✈️</text></svg>">
+    
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%231f3a3a%22/><text x=%2215%22 y=%2275%22 font-size=%2270%22>✈️</text></svg>">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Viaggi Italia">
+    <meta name="mobile-web-app-capable" content="yes">
+
     <style>
         :root {
             --primary-color: #2f4f4f;
@@ -520,7 +530,7 @@
             </div>
             <div class="modal-field">
                 <label>Note e ricordi di viaggio</label>
-                <textarea id="diary-text" rows="4" placeholder="Cosa avete visto di bello? Dove avete mangiato?"></textarea>
+                <textarea id="diary-text" rows="4" placeholder="Cosa avete visto di bello? Where avete mangiato?"></textarea>
             </div>
             <div style="font-size: 11px; color: var(--text-light); margin-bottom: 10px;" id="diary-author-info"></div>
             <div class="modal-buttons">
@@ -554,14 +564,11 @@
     </div>
 
     <script>
-        // ==========================================
-        // ⚠️ CONTROLLA QUESTI VALORI SOTTO!
-        // ==========================================
         const GH_CONFIG = {
-            owner: "marchesiniluca",    // Il tuo nome utente GitHub
-            repo: "citt--visitate",     // CONTROLLA SE CI SONO DUE TRATTINI O SE È UN ERRORE! (Es: "citta-visitate")
-            path: "dati.json",          // Il file che contiene i dati
-            branch: "main"              // Il branch principale
+            owner: "marchesiniluca",   
+            repo: "citt--visitate",    
+            path: "dati.json",         
+            branch: "main"             
         };
 
         let GITHUB_TOKEN = localStorage.getItem('gh_travel_token') || ""; 
@@ -577,6 +584,7 @@
         let cittaSelezionataPerDiario = null;
         let statoCollassatoRegioni = JSON.parse(localStorage.getItem('regioni_collassate') || '{}');
 
+        // Database esteso con almeno 30 importanti località per ciascuna delle 20 regioni italiane
         const datiViaggi = {
             "Abruzzo": ["L'Aquila", "Pescara", "Chieti", "Teramo", "Montesilvano", "Avezzano", "Vasto", "Lanciano", "Sulmona", "Roseto degli Abruzzi", "Ortona", "Frascati", "Giulianova", "Atri", "Celano", "Alfedena", "Pescasseroli", "Roccaraso", "Scanno", "Tagliacozzo", "Campli", "Castelli", "Guardiagrele", "Penne", "Alba Fucens", "Civitella del Tronto", "Santo Stefano di Sessanio", "Rocca Calascio", "Anversa degli Abruzzi", "Pineto", "Silvi"],
             "Basilicata": ["Potenza", "Matera", "Melfi", "Pisticci", "Lavello", "Rionero in Vulture", "Lauria", "Bernalda", "Venosa", "Avigliano", "Policoro", "Montalbano Jonico", "Ferrandina", "Maratea", "Tricarico", "Senise", "Nova Siri", "Lagonegro", "Sant'Arcangelo", "Rotonda", "Viggiano", "Acerenza", "Castelmezzano", "Pietrapertosa", "Craco", "Aliano", "Metaponto", "Irsina", "Moliterno", "Stigliano"],
@@ -807,7 +815,7 @@
 
         function generaSafeId(citta) {
             return Array.from(citta.toLowerCase().normalize("NFD"))
-                .filter(char => !/[\u0300-\u036f]/.test(char))
+                .filter(char => !char.match(/[\u0300-\u036f]/))
                 .join('')
                 .replace(/[^a-z0-9]/g, "_");
         }
@@ -925,9 +933,6 @@
             document.getElementById('stats-modal').style.display = 'none';
         }
 
-        // ==========================================
-        // AGGIORNATO: LETTURA CON TEXTDECODER (UTF-8) ANTI-CRASH
-        // ==========================================
         async function caricaDatiDaGitHub(forzareRender = false) {
             if (isSaving || !GITHUB_TOKEN) return;
             try {
@@ -936,30 +941,25 @@
                 if(risposta.ok) {
                     let jsonRes = await risposta.json();
                     currentSha = jsonRes.sha;
-                    
-                    if (!jsonRes.content || jsonRes.content.trim() === "") {
-                        statoGlobale = {};
-                    } else {
-                        let binString = atob(jsonRes.content.replace(/\s/g, ''));
-                        let bytes = Uint8Array.from(binString, m => m.charCodeAt(0));
-                        let testoJson = new TextDecoder().decode(bytes);
-                        statoGlobale = testoJson.trim() === "" ? {} : JSON.parse(testoJson);
+                    let datiCloud = JSON.parse(atob(jsonRes.content));
+                    if (datiCloud && typeof datiCloud === 'object') {
+                        let cambiati = JSON.stringify(statoGlobale) !== JSON.stringify(datiCloud);
+                        if (cambiati || forzareRender) {
+                            statoGlobale = datiCloud;
+                            localStorage.setItem('tabellone_viaggi', JSON.stringify(statoGlobale));
+                            renderizzaTabellaCompleta();
+                        } else {
+                            aggiornaSchermata();
+                        }
+                        indicator.innerHTML = "🟢 Sincronizzato";
+                        indicator.style.background = "#10b981";
                     }
-
-                    localStorage.setItem('tabellone_viaggi', JSON.stringify(statoGlobale));
-                    renderizzaTabellaCompleta();
-                    
-                    indicator.innerHTML = "🟢 Sincronizzato";
-                    indicator.style.background = "#10b981";
                 } else if(risposta.status === 401 || risposta.status === 403) {
                     indicator.innerHTML = "❌ Token Invalido";
                     indicator.style.background = "#ef4444";
-                } else if(risposta.status === 404) {
-                    indicator.innerHTML = "⚠️ File/Repo Non Trovato";
-                    indicator.style.background = "#f59e0b";
                 }
             } catch (e) {
-                indicator.innerHTML = "⚠️ Errore Cloud (Lettura)";
+                indicator.innerHTML = "⚠️ Errore Cloud";
                 indicator.style.background = "#f59e0b";
             }
         }
@@ -1082,7 +1082,7 @@
         function modificaCitta(vecchioNome) {
             let nuovoNome = prompt(`Modifica il nome:`, vecchioNome);
             if (!nuovoNome || nuovoNome.trim() === "" || nuovoNome.trim() === vecchioNome) return;
-            nuovoNome = nuevoNome.trim();
+            nuovoNome = nuovoNome.trim();
 
             if (statoGlobale["_mappaCittaExtraRegione"]) {
                 let r = statoGlobale["_mappaCittaExtraRegione"][vecchioNome];
@@ -1124,9 +1124,6 @@
             gestisciSalvataggioConMerge();
         }
 
-        // ==========================================
-        // AGGIORNATO: SCRITTURA E UNIONE AVANZATA CON BLOCCO ERRORI
-        // ==========================================
         async function gestisciSalvataggioConMerge() {
             if (!GITHUB_TOKEN) return;
             isSaving = true;
@@ -1141,12 +1138,7 @@
                 if (rispostaGet.ok) {
                     let jsonRes = await rispostaGet.json();
                     currentSha = jsonRes.sha;
-                    if (jsonRes.content && jsonRes.content.trim() !== "") {
-                        let binString = atob(jsonRes.content.replace(/\s/g, ''));
-                        let bytes = Uint8Array.from(binString, m => m.charCodeAt(0));
-                        let testoJson = new TextDecoder().decode(bytes);
-                        datiCloud = testoJson.trim() === "" ? {} : JSON.parse(testoJson);
-                    }
+                    datiCloud = JSON.parse(atob(jsonRes.content));
                 }
 
                 if (datiCloud["_mappaCittaExtraRegione"]) {
@@ -1197,13 +1189,10 @@
                     currentSha = jsonResPut.content.sha;
                     indicator.innerHTML = "🟢 Sincronizzato";
                     indicator.style.background = "#10b981";
-                } else {
-                    throw new Error("Errore Server GitHub: " + rispostaPut.status);
                 }
             } catch (e) {
-                indicator.innerHTML = "❌ Errore Cloud (Salvataggio)";
+                indicator.innerHTML = "❌ Errore Cloud";
                 indicator.style.background = "#ef4444";
-                console.error(e);
             } finally {
                 isSaving = false;
                 aggiornaSchermata();
