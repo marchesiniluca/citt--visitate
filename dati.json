@@ -48,5 +48,6 @@
   "ferrara_p2": true,
   "fidenza_p2": true,
   "forli_p2": true,
-  "imola_p2": true
+  "imola_p2": false,
+  "lugo_p2": true
 }
