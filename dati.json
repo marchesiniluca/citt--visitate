@@ -61,5 +61,8 @@
   "salsomaggiore_terme_p2": true,
   "san_giovanni_in_persiceto_p2": true,
   "sassuolo_p2": true,
-  "scandiano_p2": true
+  "scandiano_p2": true,
+  "_mappaCittaExtraRegione": {
+    "Sestola": "Emilia-Romagna"
+  }
 }
