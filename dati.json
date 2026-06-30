@@ -29,5 +29,6 @@
   "roseto_degli_abruzzi_p2": true,
   "vasto_p2": true,
   "montesilvano_p2": true,
-  "tagliacozzo_p2": true
+  "tagliacozzo_p2": false,
+  "sulmona_p2": true
 }
