@@ -65,7 +65,8 @@
   "_mappaCittaExtraRegione": {
     "Sestola": "Emilia-Romagna",
     "Ostia": "Lazio",
-    "Budoni": "Sardegna"
+    "Budoni": "Sardegna",
+    "San teodoro": "Sardegna"
   },
   "sestola_p3": true,
   "sestola_p2": true,
