@@ -93,6 +93,8 @@
   "sanremo_p2": true,
   "varazze_p2": true,
   "sestri_levante_p2": true,
-  "ventimiglia_p2": true,
-  "vernazza_p2": true
+  "ventimiglia_p2": false,
+  "vernazza_p2": true,
+  "bergamo_p2": true,
+  "brescia_p2": true
 }
