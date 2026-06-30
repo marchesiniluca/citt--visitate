@@ -63,7 +63,8 @@
   "sassuolo_p2": true,
   "scandiano_p2": true,
   "_mappaCittaExtraRegione": {
-    "Sestola": "Emilia-Romagna"
+    "Sestola": "Emilia-Romagna",
+    "Ostia": "Lazio"
   },
   "sestola_p3": true,
   "sestola_p2": true,
