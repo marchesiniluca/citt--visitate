@@ -64,7 +64,8 @@
   "scandiano_p2": true,
   "_mappaCittaExtraRegione": {
     "Sestola": "Emilia-Romagna",
-    "Ostia": "Lazio"
+    "Ostia": "Lazio",
+    "Budoni": "Sardegna"
   },
   "sestola_p3": true,
   "sestola_p2": true,
