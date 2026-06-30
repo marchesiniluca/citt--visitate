@@ -64,5 +64,6 @@
   "scandiano_p2": true,
   "_mappaCittaExtraRegione": {
     "Sestola": "Emilia-Romagna"
-  }
+  },
+  "sestola_p2": true
 }
