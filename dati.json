@@ -159,8 +159,10 @@
   "lecce_p2": true,
   "varazze_p4": true,
   "altamura_p2": true,
-  "bergamo_p4": true,
-  "brescia_p4": true,
   "leuca_p2": true,
-  "manfredonia_p2": true
+  "bergamo_p4": true,
+  "manfredonia_p2": false,
+  "monopoli_p2": true,
+  "nardo_p2": true,
+  "brescia_p4": true
 }
